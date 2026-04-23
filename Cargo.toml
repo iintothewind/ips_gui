@@ -1,0 +1,30 @@
+[package]
+name = "ips_gui"
+version = "0.1.0"
+edition = "2021"
+description = "GUI frontend for IPS - Image Prompt Search"
+
+[[bin]]
+name = "ips_gui"
+path = "src/main.rs"
+
+[dependencies]
+eframe = "0.29"
+ips = { path = "../ips_cli" }
+rayon = "1"
+rfd = "0.14"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+csv = "1"
+regex = "1"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+
+# Icon embedding — only needed when building *for* Windows
+[target.'cfg(target_os = "windows")'.build-dependencies]
+resvg = "0.44"
+ico = "0.3"
+winres = "0.1"
+
+[profile.release]
+strip = true
+opt-level = 3
