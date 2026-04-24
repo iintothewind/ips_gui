@@ -1,59 +1,32 @@
 # ips_gui — Image Prompt Search GUI
 
-A native desktop GUI for ips_cli (image prompt search), the AI image prompt search tool. Search PNG, JPEG, and WebP image metadata from Stable Diffusion (A1111/Forge), ComfyUI, NovelAI, and InvokeAI — with a point-and-click interface, live match highlighting, and one-click export.
+A native desktop GUI for searching AI-generated image prompts embedded in PNG, JPEG, and WebP metadata. Supports Stable Diffusion (A1111/Forge), ComfyUI, NovelAI, and InvokeAI. Self-contained — no external library crate required.
 
 ## Requirements
 
 - Rust 1.75 or later
-- The `ips` library crate located at `../ips_cli` (included in the workspace)
 
-## Installation
-
-Build a debug binary:
-
-```bash
-cd ips_gui
-cargo build
-./target/debug/ips_gui
-```
-
-Build an optimized release binary:
+## Build
 
 ```bash
 cargo build --release
-./target/release/ips_gui
+./target/release/ips_gui        # macOS / Linux
+target\release\ips_gui.exe      # Windows
 ```
+
+## Pre-built Binaries
+
+Pre-built binaries for Windows (x86-64), macOS (Apple Silicon), and Linux (x86-64) are attached to each [GitHub Release](../../releases).
 
 ## Interface
 
-```
-┌─────────────────────┬──────────────────────────────────────────────┐
-│  Search Parameters  │  Results (42)                                │
-│  ─────────────────  │  ──────────────────────────────────────────  │
-│  Query:             │  ┌──────────────────────────────────────────┐│
-│  [cyberpunk city  ] │  │ ./art/city01.png  [a1111]                ││
-│                     │  │ ...a photo of a cyberpunk city at         ││
-│  Directory:         │  │ night, neon lights, rain...               ││
-│  [./images ] Browse │  └──────────────────────────────────────────┘│
-│                     │  ┌──────────────────────────────────────────┐│
-│  Match Mode:        │  │ ./art/city02.png  [comfyui]              ││
-│  Exact Fuzzy Regex  │  │ ...futuristic cyberpunk cityscape,        ││
-│                     │  │ ultra detailed...                         ││
-│  Max Depth:         │  └──────────────────────────────────────────┘│
-│  [          ]       │                                              │
-│                     │                                              │
-│  Options:           │                                              │
-│  [ ] Show full      │                                              │
-│  [ ] Top-level only │                                              │
-│  [ ] Verbose        │                                              │
-│                     │                                              │
-│  [     Search     ] │                                              │
-│                     │                                              │
-│  Export: JSON  CSV  │                                              │
-├─────────────────────┴──────────────────────────────────────────────┤
-│  Found 42 result(s) in 0.84s                                       │
-└────────────────────────────────────────────────────────────────────┘
-```
+### Grid view
+
+![Grid view](screenshots/ips_gui_thumbnails.jpg)
+
+### Detail view (click any thumbnail)
+
+![Detail view](screenshots/ips_gui_details.jpg)
 
 ## Controls
 
@@ -62,61 +35,72 @@ cargo build --release
 | Control | Description |
 |---|---|
 | **Query** | Text to search for. Press Enter or click Search to run. |
-| **Directory** | Root directory to search. Type a path or click **Browse…** to pick a folder with a native dialog. Defaults to `.` (current directory). |
-| **Match Mode** | `Exact` — case-insensitive substring match (default). `Fuzzy` — approximate matching using the Skim algorithm. `Regex` — regular expression match (validated before search starts). |
-| **Min Score** | Appears only in Fuzzy mode. Slider from 0 to 100; results below the threshold are excluded. Default: 50. |
-| **Max Depth** | Limit directory recursion depth. Leave blank for unlimited. |
-| **Show full prompt** | When unchecked, prompts longer than 500 characters are truncated with `…`. Check to see the complete text. |
-| **Top-level only** | When checked, only the immediate contents of the directory are searched (no subdirectories). |
-| **Verbose** | Log skipped and corrupt files to stderr (useful for debugging). |
-| **Search button** | Disabled while a search is already running or the query field is empty. |
+| **Directory** | Root directory to search. Type a path or click **Browse…** to pick a folder. Defaults to `.`. |
+| **Match Mode** | `Exact` — case-insensitive substring (default). `Fuzzy` — approximate match via Skim algorithm. `Regex` — regular expression (validated before search). |
+| **Min Score** | Fuzzy mode only. Slider 0–100; results below the threshold are excluded. Default: 50. |
+| **Max Depth** | Limit directory recursion depth. Blank = unlimited. |
+| **Top-level only** | Search only the immediate contents of the directory, no subdirectories. |
+| **Search within results** | Visible only when results are present. When checked, Search filters the current result set instead of re-scanning the filesystem. Useful for iterative refinement. |
+| **Search button** | Disabled while a search is running or the query is empty. |
 
-### Results (central panel)
+### Results — Grid view (central panel)
 
-Each result is displayed as a card showing:
+Matched images are displayed as a 100×100 px thumbnail grid, sorted alphabetically by path. Non-image files show a 📄 icon. Click any cell to open the detail view.
 
-- **File path** (cyan, bold) — the absolute or relative path to the image file.
-- **Generator tag** (grey) — detected source: `a1111`, `comfyui`, `novelai`, `invokeai`, or `unknown`.
-- **Fuzzy score** (green, small) — visible only in Fuzzy mode.
-- **Prompt text** — the extracted metadata, with matched portions highlighted in yellow. Prompts are truncated at 500 characters unless **Show full prompt** is checked.
+### Results — Detail view
 
-Results are sorted alphabetically by file path.
+Opens when you click a thumbnail. Shows:
+
+- **Back / Prev / Next buttons** — navigate between the grid and adjacent results.
+- **Image preview** — up to 300×300 px, loaded asynchronously.
+- **File path** — click **📋 Copy path** to copy to clipboard.
+- **Generator** — detected source: `a1111`, `comfyui`, `novelai`, `invokeai`, or `unknown`.
+- **Score** — visible in Fuzzy mode only.
+- **Full prompt** — complete extracted metadata text.
+
+### Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| **Enter** (Query focused) | Start search |
+| **← / →** | Previous / next result in detail view |
+| **Esc** | Return to grid view |
 
 ### Status bar (bottom)
 
-Displays a spinner and "Searching…" while a search is running, the result count and elapsed time after completion, or a red error message if the query is invalid (e.g. malformed regex).
+Displays a spinner while searching, result count and elapsed time on completion, or a red error for invalid queries (e.g. malformed regex).
 
-### Export (left panel, appears after a search)
+### Export (left panel, after a search)
 
-| Button | Description |
+| Button | Output |
 |---|---|
-| **JSON** | Opens a native save dialog. Writes a JSON array with `path`, `generator`, `prompt`, and `score` (fuzzy mode only) fields. |
-| **CSV** | Opens a native save dialog. Writes RFC 4180 CSV with the same four columns. |
-
-## Keyboard Shortcut
-
-Pressing **Enter** while the Query field is focused starts the search, equivalent to clicking the Search button.
+| **JSON** | Array of `{ path, generator, prompt, score? }` objects (pretty-printed). |
+| **CSV** | RFC 4180, columns: `path`, `generator`, `prompt`, `score`. |
 
 ## Supported Generators
 
-Inherits full generator support from the `ips` library:
-
 | Generator | Formats |
 |---|---|
-| Stable Diffusion A1111 / Forge | PNG (`parameters` chunk), JPEG (COM marker) |
-| ComfyUI | PNG (`prompt` workflow JSON) |
+| Stable Diffusion A1111 / Forge | PNG (`parameters` tEXt chunk), JPEG (COM marker) |
+| ComfyUI | PNG (`prompt` workflow JSON in tEXt/iTXt) |
 | NovelAI | PNG (`Comment` JSON, `Description` chunk) |
 | InvokeAI | JPEG / WebP (XMP with `invokeai:` namespace) |
-| Various | JPEG / WebP (XMP `dc:description`) |
-
-## Relationship to ips CLI
-
-`ips_gui` is a thin GUI shell over the `ips` library. It reuses the same discovery, extraction, and matching pipeline as the CLI — no logic is duplicated. The CLI remains the better choice for scripting, piping output, or batch processing; the GUI is optimised for interactive browsing.
+| Generic | JPEG / WebP (XMP `dc:description`, EXIF `UserComment`) |
 
 ## Development
 
 ```bash
-cargo build          # debug build
+cargo build            # debug build
 cargo build --release  # optimized release build
-cargo clippy         # lint
+cargo test             # run unit tests
+cargo clippy           # lint
+```
+
+## CI / Release
+
+Pushing a `v*` tag triggers the GitHub Actions workflow, which builds release binaries for all three platforms and publishes a GitHub Release with SHA-256 checksums:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
 ```

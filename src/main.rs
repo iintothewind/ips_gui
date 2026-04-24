@@ -1,11 +1,13 @@
 #![windows_subsystem = "windows"]
 
+mod ips;
+
 use eframe::egui;
 use ips::{
     discovery::discover_files,
     extract::extract_prompt,
     matcher::match_record,
-    types::{Config, MatchMode, MatchResult, OutputFormat},
+    types::{Config, MatchMode, MatchResult, PromptRecord},
 };
 use rayon::prelude::*;
 use std::{
@@ -51,22 +53,30 @@ enum ViewMode {
 fn setup_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
 
-    // Try common Windows CJK fonts in order of preference.
-    // The first one found is appended as a fallback so English glyphs
-    // still come from the default Inter font.
-    let candidates = [
-        r"C:\Windows\Fonts\msyh.ttc",    // Microsoft YaHei (simplified)
-        r"C:\Windows\Fonts\msjh.ttc",    // Microsoft JhengHei (traditional)
-        r"C:\Windows\Fonts\simsun.ttc",  // SimSun
-        r"C:\Windows\Fonts\simhei.ttf",  // SimHei
+    let candidates: &[&str] = &[
+        // Windows
+        r"C:\Windows\Fonts\msyh.ttc",
+        r"C:\Windows\Fonts\msjh.ttc",
+        r"C:\Windows\Fonts\simsun.ttc",
+        r"C:\Windows\Fonts\simhei.ttf",
+        // macOS
+        "/System/Library/Fonts/PingFang.ttc",
+        "/System/Library/Fonts/STHeiti Light.ttc",
+        "/System/Library/Fonts/Hiragino Sans GB.ttc",
+        // Linux — Noto CJK (location varies by distro)
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+        "/usr/share/fonts/truetype/arphic/uming.ttc",
     ];
 
-    for path in &candidates {
+    for path in candidates {
         if let Ok(data) = std::fs::read(path) {
             fonts
                 .font_data
                 .insert("cjk".to_owned(), egui::FontData::from_owned(data));
-            // Push as fallback after the built-in Latin fonts
             for list in fonts.families.values_mut() {
                 list.push("cjk".to_owned());
             }
@@ -108,10 +118,10 @@ struct IpsGuiApp {
     search_path: String,
     match_mode: MatchModeOpt,
     min_score: i64,
-    full_prompt: bool,
     no_recursive: bool,
     verbose: bool,
     depth_str: String,
+    search_within_results: bool,
 
     searching: bool,
     results: Vec<MatchResult>,
@@ -143,10 +153,10 @@ impl IpsGuiApp {
             search_path: ".".into(),
             match_mode: MatchModeOpt::Exact,
             min_score: 50,
-            full_prompt: false,
             no_recursive: false,
             verbose: false,
             depth_str: String::new(),
+            search_within_results: false,
             searching: false,
             results: Vec::new(),
             status_msg: "Enter a query and click Search.".into(),
@@ -208,52 +218,66 @@ impl IpsGuiApp {
         let config = Config {
             query: self.query.clone(),
             path: PathBuf::from(&self.search_path),
-            format: OutputFormat::Console,
             match_mode: match self.match_mode {
                 MatchModeOpt::Exact => MatchMode::Exact,
                 MatchModeOpt::Fuzzy => MatchMode::Fuzzy,
                 MatchModeOpt::Regex => MatchMode::Regex,
             },
             min_score: self.min_score,
-            full: self.full_prompt,
             depth: self.depth_str.trim().parse().ok(),
             no_recursive: self.no_recursive,
-            threads: None,
             verbose: self.verbose,
-            no_color: true,
         };
 
         let (tx, rx) = mpsc::channel();
         let ctx2 = ctx.clone();
 
-        std::thread::spawn(move || {
-            let t0 = Instant::now();
-            let files = discover_files(&config);
+        if self.search_within_results && !self.results.is_empty() {
+            // Filter the existing result set instead of scanning the filesystem.
+            let records: Vec<PromptRecord> =
+                self.results.iter().map(|r| r.record.clone()).collect();
 
-            let mut results: Vec<MatchResult> = files
-                .par_iter()
-                .flat_map(|path| {
-                    extract_prompt(path, config.verbose)
-                        .into_iter()
-                        .filter_map(|rec| match_record(&rec, &config))
-                        .collect::<Vec<_>>()
-                })
-                .collect();
+            std::thread::spawn(move || {
+                let t0 = Instant::now();
+                let mut results: Vec<MatchResult> = records
+                    .par_iter()
+                    .filter_map(|rec| match_record(rec, &config))
+                    .collect();
+                results.sort_by(|a, b| a.record.path.cmp(&b.record.path));
+                let elapsed = t0.elapsed().as_secs_f64();
+                let _ = tx.send(SearchMsg::Done(results, elapsed));
+                ctx2.request_repaint();
+            });
+        } else {
+            self.thumbnails.clear();
+            self.thumb_queued.clear();
 
-            results.sort_by(|a, b| a.record.path.cmp(&b.record.path));
+            std::thread::spawn(move || {
+                let t0 = Instant::now();
+                let files = discover_files(&config);
 
-            let elapsed = t0.elapsed().as_secs_f64();
-            let _ = tx.send(SearchMsg::Done(results, elapsed));
-            ctx2.request_repaint();
-        });
+                let mut results: Vec<MatchResult> = files
+                    .par_iter()
+                    .flat_map(|path| {
+                        extract_prompt(path, config.verbose)
+                            .into_iter()
+                            .filter_map(|rec| match_record(&rec, &config))
+                            .collect::<Vec<_>>()
+                    })
+                    .collect();
+
+                results.sort_by(|a, b| a.record.path.cmp(&b.record.path));
+                let elapsed = t0.elapsed().as_secs_f64();
+                let _ = tx.send(SearchMsg::Done(results, elapsed));
+                ctx2.request_repaint();
+            });
+        }
 
         self.searching = true;
         self.error_msg = None;
         self.status_msg = "Searching…".into();
         self.rx = Some(rx);
         self.view_mode = ViewMode::Grid;
-        self.thumbnails.clear();
-        self.thumb_queued.clear();
     }
 
     fn export_json(&self) {
@@ -396,8 +420,10 @@ impl eframe::App for IpsGuiApp {
                 ui.add_space(10.0);
 
                 ui.label("Options:");
-                ui.checkbox(&mut self.full_prompt, "Show full prompt");
                 ui.checkbox(&mut self.no_recursive, "Top-level only (non-recursive)");
+                if !self.results.is_empty() {
+                    ui.checkbox(&mut self.search_within_results, "Search within results");
+                }
                 ui.add_space(16.0);
 
                 ui.add_enabled_ui(!self.searching && !self.query.is_empty(), |ui| {
@@ -445,7 +471,6 @@ impl eframe::App for IpsGuiApp {
         });
 
         // ── Central panel ────────────────────────────────────────────────────
-        // Collect mutations here; closures below read self immutably.
         let mut grid_loads: Vec<PathBuf> = Vec::new();
         let mut grid_vis: HashSet<PathBuf> = HashSet::new();
         let mut next_view: Option<ViewMode> = None;
@@ -593,7 +618,6 @@ impl eframe::App for IpsGuiApp {
 
                 // ── Detail view ──────────────────────────────────────────────
                 ViewMode::Detail(idx) => {
-                    // Extract owned data so the closure can also mutate flags
                     let result = &self.results[idx];
                     let path_str = result.record.path.display().to_string();
                     let filename = result
@@ -613,7 +637,7 @@ impl eframe::App for IpsGuiApp {
                     };
                     let total = self.results.len();
 
-                    // ── Keyboard navigation (no buttons needed) ──────────────
+                    // Keyboard navigation
                     ui.input(|i| {
                         if i.key_pressed(egui::Key::Escape) {
                             next_view = Some(ViewMode::Grid);
@@ -624,12 +648,26 @@ impl eframe::App for IpsGuiApp {
                         }
                     });
 
-                    // ── Top bar: position indicator only ─────────────────────
+                    // ── Top bar: Back / Prev / Next / position ───────────────
                     ui.horizontal(|ui| {
+                        if ui.button("◀ Back").clicked() {
+                            next_view = Some(ViewMode::Grid);
+                        }
+                        ui.add_space(4.0);
+                        ui.add_enabled_ui(idx > 0, |ui| {
+                            if ui.button("← Prev").clicked() {
+                                next_view = Some(ViewMode::Detail(idx - 1));
+                            }
+                        });
+                        ui.add_enabled_ui(idx + 1 < total, |ui| {
+                            if ui.button("Next →").clicked() {
+                                next_view = Some(ViewMode::Detail(idx + 1));
+                            }
+                        });
+                        ui.add_space(8.0);
                         ui.label(
-                            egui::RichText::new(format!("{} / {total}  (< > to navigate, Esc to go back)", idx + 1))
-                                .color(egui::Color32::GRAY)
-                                .small(),
+                            egui::RichText::new(format!("{} / {total}", idx + 1))
+                                .color(egui::Color32::GRAY),
                         );
                     });
                     ui.separator();
@@ -708,7 +746,6 @@ impl eframe::App for IpsGuiApp {
                                     );
                                     ui.add_space(6.0);
 
-                                    // Clickable path
                                     ui.horizontal(|ui| {
                                         ui.label(
                                             egui::RichText::new(&path_str)
@@ -751,8 +788,6 @@ impl eframe::App for IpsGuiApp {
 
         // ── Apply grid-mode mutations ────────────────────────────────────────
         if matches!(self.view_mode, ViewMode::Grid) {
-            // Only clean up textures in grid mode.
-            // In detail mode we keep everything so returning is instant.
             self.thumbnails.retain(|p, state| {
                 matches!(state, ThumbState::Failed) || grid_vis.contains(p)
             });
@@ -761,7 +796,6 @@ impl eframe::App for IpsGuiApp {
                 self.request_thumb(path, ctx);
             }
         } else if let ViewMode::Detail(idx) = self.view_mode {
-            // Ensure the detail image is requested if not yet loaded
             if let Some(result) = self.results.get(idx) {
                 let path = result.record.path.clone();
                 if is_image(&path) {
