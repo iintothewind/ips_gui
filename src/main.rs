@@ -4,7 +4,7 @@ mod ips;
 
 use eframe::egui;
 use ips::{
-    discovery::discover_files,
+    discovery::{discover_files, is_image},
     extract::extract_prompt,
     matcher::match_record,
     types::{Config, MatchMode, MatchResult, PromptRecord},
@@ -21,15 +21,7 @@ const GRID_THUMB: f32 = 100.0;
 const GRID_GAP: f32 = 4.0;
 const THUMB_LOAD_PX: u32 = 300;
 const DETAIL_THUMB_MAX: f32 = 300.0;
-const IMAGE_EXTS: &[&str] = &["png", "jpg", "jpeg", "webp"];
 const THUMB_THREADS: usize = 4;
-
-fn is_image(path: &PathBuf) -> bool {
-    path.extension()
-        .and_then(|e| e.to_str())
-        .map(|e| IMAGE_EXTS.contains(&e.to_lowercase().as_str()))
-        .unwrap_or(false)
-}
 
 fn load_thumbnail(path: &PathBuf) -> Option<egui::ColorImage> {
     let img = image::open(path).ok()?;
@@ -102,24 +94,12 @@ fn main() -> eframe::Result<()> {
     )
 }
 
-enum SearchMsg {
-    Done(Vec<MatchResult>, f64),
-}
-
-#[derive(PartialEq, Clone)]
-enum MatchModeOpt {
-    Exact,
-    Fuzzy,
-    Regex,
-}
-
 struct IpsGuiApp {
     query: String,
     search_path: String,
-    match_mode: MatchModeOpt,
+    match_mode: MatchMode,
     min_score: i64,
     no_recursive: bool,
-    verbose: bool,
     depth_str: String,
     search_within_results: bool,
 
@@ -127,7 +107,7 @@ struct IpsGuiApp {
     results: Vec<MatchResult>,
     status_msg: String,
     error_msg: Option<String>,
-    rx: Option<Receiver<SearchMsg>>,
+    rx: Option<Receiver<(Vec<MatchResult>, f64)>>,
 
     view_mode: ViewMode,
 
@@ -151,10 +131,9 @@ impl IpsGuiApp {
         Self {
             query: String::new(),
             search_path: ".".into(),
-            match_mode: MatchModeOpt::Exact,
+            match_mode: MatchMode::Exact,
             min_score: 50,
             no_recursive: false,
-            verbose: false,
             depth_str: String::new(),
             search_within_results: false,
             searching: false,
@@ -208,7 +187,7 @@ impl IpsGuiApp {
             return;
         }
 
-        if self.match_mode == MatchModeOpt::Regex {
+        if self.match_mode == MatchMode::Regex {
             if let Err(e) = regex::Regex::new(&self.query) {
                 self.error_msg = Some(format!("Invalid regex: {e}"));
                 return;
@@ -218,22 +197,17 @@ impl IpsGuiApp {
         let config = Config {
             query: self.query.clone(),
             path: PathBuf::from(&self.search_path),
-            match_mode: match self.match_mode {
-                MatchModeOpt::Exact => MatchMode::Exact,
-                MatchModeOpt::Fuzzy => MatchMode::Fuzzy,
-                MatchModeOpt::Regex => MatchMode::Regex,
-            },
+            match_mode: self.match_mode.clone(),
             min_score: self.min_score,
             depth: self.depth_str.trim().parse().ok(),
             no_recursive: self.no_recursive,
-            verbose: self.verbose,
+            verbose: false,
         };
 
         let (tx, rx) = mpsc::channel();
         let ctx2 = ctx.clone();
 
         if self.search_within_results && !self.results.is_empty() {
-            // Filter the existing result set instead of scanning the filesystem.
             let records: Vec<PromptRecord> =
                 self.results.iter().map(|r| r.record.clone()).collect();
 
@@ -244,8 +218,7 @@ impl IpsGuiApp {
                     .filter_map(|rec| match_record(rec, &config))
                     .collect();
                 results.sort_by(|a, b| a.record.path.cmp(&b.record.path));
-                let elapsed = t0.elapsed().as_secs_f64();
-                let _ = tx.send(SearchMsg::Done(results, elapsed));
+                let _ = tx.send((results, t0.elapsed().as_secs_f64()));
                 ctx2.request_repaint();
             });
         } else {
@@ -258,17 +231,15 @@ impl IpsGuiApp {
 
                 let mut results: Vec<MatchResult> = files
                     .par_iter()
-                    .flat_map(|path| {
+                    .flat_map_iter(|path| {
                         extract_prompt(path, config.verbose)
                             .into_iter()
                             .filter_map(|rec| match_record(&rec, &config))
-                            .collect::<Vec<_>>()
                     })
                     .collect();
 
                 results.sort_by(|a, b| a.record.path.cmp(&b.record.path));
-                let elapsed = t0.elapsed().as_secs_f64();
-                let _ = tx.send(SearchMsg::Done(results, elapsed));
+                let _ = tx.send((results, t0.elapsed().as_secs_f64()));
                 ctx2.request_repaint();
             });
         }
@@ -344,7 +315,7 @@ impl eframe::App for IpsGuiApp {
         // ── Poll search thread ───────────────────────────────────────────────
         if let Some(rx) = &self.rx {
             match rx.try_recv() {
-                Ok(SearchMsg::Done(results, secs)) => {
+                Ok((results, secs)) => {
                     let n = results.len();
                     self.results = results;
                     self.searching = false;
@@ -399,12 +370,12 @@ impl eframe::App for IpsGuiApp {
 
                 ui.label("Match Mode:");
                 ui.horizontal(|ui| {
-                    ui.selectable_value(&mut self.match_mode, MatchModeOpt::Exact, "Exact");
-                    ui.selectable_value(&mut self.match_mode, MatchModeOpt::Fuzzy, "Fuzzy");
-                    ui.selectable_value(&mut self.match_mode, MatchModeOpt::Regex, "Regex");
+                    ui.selectable_value(&mut self.match_mode, MatchMode::Exact, "Exact");
+                    ui.selectable_value(&mut self.match_mode, MatchMode::Fuzzy, "Fuzzy");
+                    ui.selectable_value(&mut self.match_mode, MatchMode::Regex, "Regex");
                 });
 
-                if self.match_mode == MatchModeOpt::Fuzzy {
+                if self.match_mode == MatchMode::Fuzzy {
                     ui.add_space(4.0);
                     ui.label(format!("Min Score: {}", self.min_score));
                     ui.add(egui::Slider::new(&mut self.min_score, 0..=100).show_value(false));
@@ -620,16 +591,11 @@ impl eframe::App for IpsGuiApp {
                 ViewMode::Detail(idx) => {
                     let result = &self.results[idx];
                     let path_str = result.record.path.display().to_string();
-                    let filename = result
-                        .record
-                        .path
-                        .file_name()
+                    let filename = result.record.path.file_name()
                         .unwrap_or_default()
-                        .to_string_lossy()
-                        .to_string();
+                        .to_string_lossy();
                     let generator = result.record.generator.to_string();
                     let score = result.score;
-                    let prompt = result.record.prompt.clone();
                     let is_img = is_image(&result.record.path);
                     let thumb = match self.thumbnails.get(&result.record.path) {
                         Some(ThumbState::Loaded(h)) => Some(h.clone()),
@@ -740,7 +706,7 @@ impl eframe::App for IpsGuiApp {
                                 // Right: metadata + prompt
                                 ui.vertical(|ui| {
                                     ui.label(
-                                        egui::RichText::new(&filename)
+                                        egui::RichText::new(filename.as_ref())
                                             .strong()
                                             .size(16.0),
                                     );
@@ -778,7 +744,7 @@ impl eframe::App for IpsGuiApp {
                                     ui.add_space(4.0);
                                     ui.label(egui::RichText::new("Prompt:").strong());
                                     ui.add_space(4.0);
-                                    ui.label(&prompt);
+                                    ui.label(result.record.prompt.as_str());
                                 });
                             });
                         });

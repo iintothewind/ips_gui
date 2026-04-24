@@ -17,7 +17,7 @@ pub fn discover_files(config: &Config) -> Vec<PathBuf> {
         .into_iter()
         .filter_map(|entry| match entry {
             Ok(e) => {
-                if e.file_type().is_file() && is_image_file(e.path()) {
+                if e.file_type().is_file() && is_image(e.path()) {
                     Some(e.path().to_path_buf())
                 } else {
                     None
@@ -33,7 +33,7 @@ pub fn discover_files(config: &Config) -> Vec<PathBuf> {
         .collect()
 }
 
-fn is_image_file(path: &std::path::Path) -> bool {
+pub(crate) fn is_image(path: &std::path::Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| IMAGE_EXTENSIONS.contains(&ext.to_lowercase().as_str()))

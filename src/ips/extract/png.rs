@@ -110,7 +110,7 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                 path: path.to_path_buf(),
                 prompt: value.to_string(),
                 generator: Generator::A1111,
-                metadata_key: keyword.to_string(),
+                metadata_key: "parameters",
             });
         }
         "prompt" => {
@@ -122,7 +122,7 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                             path: path.to_path_buf(),
                             prompt: prompts.join(" | "),
                             generator: Generator::ComfyUI,
-                            metadata_key: keyword.to_string(),
+                            metadata_key: "prompt",
                         });
                     }
                 }
@@ -132,7 +132,7 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                             path: path.to_path_buf(),
                             prompt: value.to_string(),
                             generator: Generator::Unknown,
-                            metadata_key: keyword.to_string(),
+                            metadata_key: "prompt",
                         });
                     }
                 }
@@ -146,7 +146,7 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                             path: path.to_path_buf(),
                             prompt: prompt.to_string(),
                             generator: Generator::NovelAI,
-                            metadata_key: keyword.to_string(),
+                            metadata_key: "Comment",
                         });
                     }
                 }
@@ -156,7 +156,7 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                             path: path.to_path_buf(),
                             prompt: value.to_string(),
                             generator: Generator::Unknown,
-                            metadata_key: keyword.to_string(),
+                            metadata_key: "Comment",
                         });
                     }
                 }
@@ -168,7 +168,7 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                     path: path.to_path_buf(),
                     prompt: value.to_string(),
                     generator: Generator::NovelAI,
-                    metadata_key: keyword.to_string(),
+                    metadata_key: "Description",
                 });
             }
         }

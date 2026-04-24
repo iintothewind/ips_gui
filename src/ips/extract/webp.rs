@@ -1,3 +1,4 @@
+use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 
 use crate::ips::types::{Generator, PromptRecord};
@@ -7,8 +8,8 @@ const RIFF_MAGIC: &[u8; 4] = b"RIFF";
 const WEBP_MAGIC: &[u8; 4] = b"WEBP";
 
 pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
-    let data = match std::fs::read(path) {
-        Ok(d) => d,
+    let file = match std::fs::File::open(path) {
+        Ok(f) => f,
         Err(e) => {
             if verbose {
                 eprintln!("ips: cannot read {}: {}", path.display(), e);
@@ -17,14 +18,18 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
         }
     };
 
-    if data.len() < 12 {
+    let mut reader = BufReader::new(file);
+
+    // Validate RIFF/WEBP header (12 bytes) without reading the whole file.
+    let mut header = [0u8; 12];
+    if reader.read_exact(&mut header).is_err() {
         if verbose {
             eprintln!("ips: {}: file too small to be a WebP", path.display());
         }
         return vec![];
     }
 
-    if &data[0..4] != RIFF_MAGIC || &data[8..12] != WEBP_MAGIC {
+    if &header[0..4] != RIFF_MAGIC || &header[8..12] != WEBP_MAGIC {
         if verbose {
             eprintln!("ips: {}: not a valid WebP", path.display());
         }
@@ -32,49 +37,69 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
     }
 
     let mut results = Vec::new();
-    let mut pos = 12usize;
 
-    while pos + 8 <= data.len() {
-        let chunk_id = &data[pos..pos + 4];
-        let chunk_size =
-            u32::from_le_bytes([data[pos + 4], data[pos + 5], data[pos + 6], data[pos + 7]])
-                as usize;
-        pos += 8;
-
-        if pos + chunk_size > data.len() {
-            if verbose {
-                eprintln!("ips: {}: truncated WebP chunk", path.display());
-            }
+    loop {
+        let mut chunk_header = [0u8; 8];
+        if reader.read_exact(&mut chunk_header).is_err() {
             break;
         }
 
-        let chunk_data = &data[pos..pos + chunk_size];
-        let padded = chunk_size + (chunk_size & 1);
-        pos += padded;
+        let chunk_id = &chunk_header[..4];
+        let chunk_size = u32::from_le_bytes([
+            chunk_header[4], chunk_header[5], chunk_header[6], chunk_header[7],
+        ]) as usize;
+        // RIFF chunks are padded to even byte boundaries.
+        let padded_size = chunk_size + (chunk_size & 1);
 
         match chunk_id {
             b"XMP " => {
-                if let Some(prompt) = jpeg::extract_xmp_description(chunk_data) {
-                    let generator = jpeg::detect_xmp_generator(chunk_data);
+                let mut chunk_data = vec![0u8; chunk_size];
+                if reader.read_exact(&mut chunk_data).is_err() {
+                    if verbose {
+                        eprintln!("ips: {}: truncated XMP chunk", path.display());
+                    }
+                    break;
+                }
+                if chunk_size & 1 != 0 {
+                    let _ = reader.seek(SeekFrom::Current(1));
+                }
+                if let Some(prompt) = jpeg::extract_xmp_description(&chunk_data) {
+                    let generator = jpeg::detect_xmp_generator(&chunk_data);
                     results.push(PromptRecord {
                         path: path.to_path_buf(),
                         prompt,
                         generator,
-                        metadata_key: "XMP".to_string(),
+                        metadata_key: "XMP",
                     });
                 }
             }
             b"EXIF" => {
-                if let Some(prompt) = exif::extract_user_comment(chunk_data) {
+                let mut chunk_data = vec![0u8; chunk_size];
+                if reader.read_exact(&mut chunk_data).is_err() {
+                    if verbose {
+                        eprintln!("ips: {}: truncated EXIF chunk", path.display());
+                    }
+                    break;
+                }
+                if chunk_size & 1 != 0 {
+                    let _ = reader.seek(SeekFrom::Current(1));
+                }
+                if let Some(prompt) = exif::extract_user_comment(&chunk_data) {
                     results.push(PromptRecord {
                         path: path.to_path_buf(),
                         prompt,
                         generator: Generator::Unknown,
-                        metadata_key: "UserComment".to_string(),
+                        metadata_key: "UserComment",
                     });
                 }
             }
-            _ => {}
+            _ => {
+                // Skip image data chunks (VP8, VP8L, VP8X, ANIM, ANMF, …)
+                // without reading them into memory.
+                if reader.seek(SeekFrom::Current(padded_size as i64)).is_err() {
+                    break;
+                }
+            }
         }
     }
 
@@ -124,6 +149,39 @@ mod tests {
         let records = extract(&path, false);
         assert_eq!(records.len(), 1);
         assert_eq!(records[0].prompt, "sunset landscape, watercolor");
+    }
+
+    #[test]
+    fn skips_vp8_chunk_before_xmp() {
+        // Simulate a realistic WebP: VP8L (image data) followed by XMP metadata.
+        let xmp = r#"<rdf:RDF><rdf:Description><dc:description><rdf:Alt>
+            <rdf:li xml:lang="x-default">after image data</rdf:li>
+            </rdf:Alt></dc:description></rdf:Description></rdf:RDF>"#;
+        let xmp_bytes = xmp.as_bytes();
+        let fake_vp8l = vec![0u8; 1024]; // 1 KB of fake image data
+
+        let xmp_chunk_size = xmp_bytes.len() as u32;
+        let vp8l_chunk_size = fake_vp8l.len() as u32;
+        let riff_size = (4u32 + 8 + vp8l_chunk_size + 8 + xmp_chunk_size).to_le_bytes();
+
+        let mut webp = Vec::new();
+        webp.extend_from_slice(b"RIFF");
+        webp.extend_from_slice(&riff_size);
+        webp.extend_from_slice(b"WEBP");
+        webp.extend_from_slice(b"VP8L");
+        webp.extend_from_slice(&vp8l_chunk_size.to_le_bytes());
+        webp.extend_from_slice(&fake_vp8l);
+        webp.extend_from_slice(b"XMP ");
+        webp.extend_from_slice(&xmp_chunk_size.to_le_bytes());
+        webp.extend_from_slice(xmp_bytes);
+
+        let dir = tempfile::TempDir::new().unwrap();
+        let path = dir.path().join("test.webp");
+        std::fs::write(&path, &webp).unwrap();
+
+        let records = extract(&path, false);
+        assert_eq!(records.len(), 1);
+        assert!(records[0].prompt.contains("after image data"));
     }
 
     #[test]

@@ -84,7 +84,7 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                         path: path.to_path_buf(),
                         prompt: text,
                         generator: Generator::A1111,
-                        metadata_key: "COM".to_string(),
+                        metadata_key: "COM",
                     });
                 }
             }
@@ -97,7 +97,7 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                             path: path.to_path_buf(),
                             prompt,
                             generator,
-                            metadata_key: "XMP".to_string(),
+                            metadata_key: "XMP",
                         });
                     }
                 } else if body.starts_with(EXIF_HEADER) {
@@ -106,7 +106,7 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                             path: path.to_path_buf(),
                             prompt,
                             generator: Generator::Unknown,
-                            metadata_key: "UserComment".to_string(),
+                            metadata_key: "UserComment",
                         });
                     }
                 }

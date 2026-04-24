@@ -6,7 +6,7 @@ pub struct PromptRecord {
     pub path: PathBuf,
     pub prompt: String,
     pub generator: Generator,
-    pub metadata_key: String,
+    pub metadata_key: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

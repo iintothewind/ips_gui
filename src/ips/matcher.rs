@@ -1,5 +1,11 @@
+use std::cell::RefCell;
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use crate::ips::types::{Config, MatchMode, MatchResult, PromptRecord};
+
+thread_local! {
+    static SKIM: SkimMatcherV2 = SkimMatcherV2::default();
+    static REGEX_CACHE: RefCell<Option<(String, regex::Regex)>> = RefCell::new(None);
+}
 
 pub fn match_record(record: &PromptRecord, config: &Config) -> Option<MatchResult> {
     match config.match_mode {
@@ -20,23 +26,32 @@ fn match_exact(record: &PromptRecord, config: &Config) -> Option<MatchResult> {
 }
 
 fn match_fuzzy(record: &PromptRecord, config: &Config) -> Option<MatchResult> {
-    let matcher = SkimMatcherV2::default();
-    let (score, _) = matcher.fuzzy_indices(&record.prompt, &config.query)?;
-    if score < config.min_score {
-        return None;
-    }
-    Some(MatchResult {
-        record: record.clone(),
-        score: Some(score),
+    SKIM.with(|matcher| {
+        let (score, _) = matcher.fuzzy_indices(&record.prompt, &config.query)?;
+        if score < config.min_score {
+            return None;
+        }
+        Some(MatchResult {
+            record: record.clone(),
+            score: Some(score),
+        })
     })
 }
 
 fn match_regex(record: &PromptRecord, config: &Config) -> Option<MatchResult> {
-    let re = regex::Regex::new(&config.query).ok()?;
-
-    re.find(&record.prompt).map(|_| MatchResult {
-        record: record.clone(),
-        score: None,
+    REGEX_CACHE.with(|cache| {
+        let mut c = cache.borrow_mut();
+        if c.as_ref().map_or(true, |(q, _)| q != &config.query) {
+            let re = regex::Regex::new(&config.query).ok()?;
+            *c = Some((config.query.clone(), re));
+        }
+        let matched = c.as_ref()?.1.find(&record.prompt).is_some();
+        drop(c);
+        if matched {
+            Some(MatchResult { record: record.clone(), score: None })
+        } else {
+            None
+        }
     })
 }
 
@@ -51,7 +66,7 @@ mod tests {
             path: PathBuf::from("test.png"),
             prompt: prompt.to_string(),
             generator: Generator::Unknown,
-            metadata_key: "parameters".to_string(),
+            metadata_key: "parameters",
         }
     }
 
