@@ -23,9 +23,12 @@ image = { version = "0.25", default-features = false, features = ["png", "jpeg",
 [dev-dependencies]
 tempfile = "3"
 
-# Icon embedding — only needed when building *for* Windows
-[target.'cfg(target_os = "windows")'.build-dependencies]
+# resvg is used on all platforms to generate the runtime window-icon PNG.
+[build-dependencies]
 resvg = "0.44"
+
+# ico + winres are only needed when embedding the icon in a Windows executable.
+[target.'cfg(target_os = "windows")'.build-dependencies]
 ico = "0.3"
 winres = "0.1"
 
