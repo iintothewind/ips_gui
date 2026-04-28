@@ -21,12 +21,13 @@
 │  │              │ ─── Config ──────→ │   discover_files     │ │
 │  └──────────────┘                   │   extract_prompt     │ │
 │         │                           │   match_record       │ │
-│         │ thumbnail                 │   (rayon par_iter)   │ │
+│         │ thumb / full-res          │   (rayon par_iter)   │ │
 │         │ requests                  └──────────────────────┘ │
 │         ▼                                                    │
 │  ┌──────────────┐                                            │
 │  │ Thumb Pool   │  rayon::ThreadPool (4 threads)             │
-│  │              │  load_thumbnail → ColorImage               │
+│  │              │  load_thumbnail → ColorImage (≤300 px)     │
+│  │              │  load_full_res  → ColorImage (native res)  │
 │  └──────────────┘                                            │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -35,9 +36,9 @@ Three concurrent actors:
 
 1. **UI thread** — runs the `eframe` event loop. Renders panels, polls channels, handles all input.
 2. **Search thread** — spawned by `std::thread::spawn` per search. Runs the full discovery → extraction → matching pipeline, sends one `SearchMsg::Done` back when complete.
-3. **Thumbnail pool** — a dedicated `rayon::ThreadPool` (4 threads) that loads and decodes image thumbnails on demand. Results are sent back to the UI thread via a separate `mpsc` channel.
+3. **Thumbnail pool** — a dedicated `rayon::ThreadPool` (4 threads) that loads and decodes both thumbnails and full-resolution images on demand. Results are sent back to the UI thread via two separate `mpsc` channels.
 
-The UI thread never blocks. It uses `try_recv()` on every frame for both channels.
+The UI thread never blocks. It uses `try_recv()` on every frame for all channels.
 
 ---
 
@@ -83,13 +84,20 @@ struct IpsGuiApp {
 
     // View
     view_mode: ViewMode,            // Grid | Detail(usize)
+    detail_image_enlarged: bool,    // true while detail view shows the full-res image
 
-    // Thumbnail loading
+    // Thumbnail loading (grid + detail preview)
     thumb_pool: rayon::ThreadPool,
     thumb_result_tx: Sender<(PathBuf, Option<ColorImage>)>,
     thumb_rx: Receiver<(PathBuf, Option<ColorImage>)>,
     thumb_queued: HashSet<PathBuf>,
     thumbnails: HashMap<PathBuf, ThumbState>,
+
+    // Full-resolution loading (detail enlarged view)
+    full_res_tx: Sender<(PathBuf, Option<ColorImage>)>,
+    full_res_rx: Receiver<(PathBuf, Option<ColorImage>)>,
+    full_res_queued: HashSet<PathBuf>,
+    full_res: HashMap<PathBuf, ThumbState>,
 }
 ```
 
@@ -97,7 +105,7 @@ struct IpsGuiApp {
 
 `depth_str` is a raw string so the text field can hold partially-typed input without losing characters. Parsed at search time with `.trim().parse().ok()`.
 
-`ThumbState` is `Loaded(TextureHandle) | Failed`. Textures are stored by file path and evicted when no longer visible in the grid (via `retain`).
+`ThumbState` is `Loaded(TextureHandle) | Failed`. Thumbnail textures are evicted when no longer visible in the grid (via `retain`). Full-res textures are dropped when navigating away from a detail item.
 
 ---
 
@@ -199,7 +207,9 @@ Each cell:
 
 ### Central panel — Detail view
 
-Replaces the grid when `view_mode == ViewMode::Detail(idx)`. Layout:
+Replaces the grid when `view_mode == ViewMode::Detail(idx)`. Two sub-layouts controlled by `detail_image_enlarged`.
+
+**Normal layout** (`detail_image_enlarged = false`):
 
 ```text
 [ ◀ Back ]  [ ← Prev ]  [ Next → ]   idx / total
@@ -208,24 +218,44 @@ Replaces the grid when `view_mode == ViewMode::Detail(idx)`. Layout:
 │ 300×300 │  │  path (cyan small)  [📋 Copy path]
 │ preview │  │  Generator: …
 └─────────┘  │  Score: …  (fuzzy only)
-             │  ──────────────
+  (click)    │  ──────────────
              │  Prompt:
              │  (full prompt text, wrapping label)
 ```
 
-The image area is a `ScrollArea::vertical` wrapping a `horizontal_top` layout. Keyboard events are consumed with `ui.input(|i| ...)` on every frame:
+Clicking the thumbnail sets `detail_image_enlarged = true` and fires `request_full_res`. If the thumbnail failed to load (file missing or unreadable), a ✕ placeholder is shown and clicking is disabled.
+
+**Enlarged layout** (`detail_image_enlarged = true`):
+
+```text
+[ ◀ Back ]  [ ← Prev ]  [ Next → ]   idx / total
+─────────────────────────────────────────────────
+┌──────────────────────────────────────────────┐
+│                                              │
+│          full-res image, aspect-fitted       │
+│          centred in available space          │
+│                                              │
+└──────────────────────────────────────────────┘
+              (click to restore)
+```
+
+While the full-res image is loading, a spinner and "Loading…" label are shown. If the load fails (file deleted between request and completion), a red "Failed to load image" message is shown instead.
+
+Keyboard events are consumed with `ui.input(|i| ...)` on every frame:
 
 | Key | Action |
 |---|---|
 | `←` | `Detail(idx - 1)` if `idx > 0` |
 | `→` | `Detail(idx + 1)` if `idx + 1 < total` |
-| `Esc` | `Grid` |
+| `Esc` | Collapse enlarged image if open; otherwise `Grid` |
 
 ---
 
-## 7. Thumbnail Loading
+## 7. Image Loading
 
-Thumbnails are loaded asynchronously by a dedicated `rayon::ThreadPool` with 4 threads (`THUMB_THREADS = 4`). The pipeline:
+Both thumbnail and full-resolution loading share the same `rayon::ThreadPool` (`THUMB_THREADS = 4`) and the same `ThumbState` enum, but use separate channels and caches so they are independently managed.
+
+### 7.1 Thumbnail loading
 
 1. **Request** — `request_thumb(path, ctx)` checks `thumbnails` and `thumb_queued`; if absent from both, inserts into `thumb_queued` and spawns a pool task.
 2. **Decode** — pool task calls `load_thumbnail`: opens the file with the `image` crate, scales to at most 300×300 px (`thumbnail(300, 300)`), converts to `RGBA8`, wraps in `egui::ColorImage`.
@@ -233,6 +263,25 @@ Thumbnails are loaded asynchronously by a dedicated `rayon::ThreadPool` with 4 t
 4. **Upload** — `poll_thumbs()` called each frame drains `thumb_rx`, uploads decoded images to GPU via `ctx.load_texture`, stores `ThumbState::Loaded(handle)` or `ThumbState::Failed`.
 
 **Eviction** (grid mode only): after rendering, `thumbnails.retain` and `thumb_queued.retain` discard entries whose paths are not in the currently visible `grid_vis` set. Detail mode skips eviction to avoid re-decoding when navigating back.
+
+### 7.2 Full-resolution loading
+
+Triggered when the user clicks the thumbnail in detail view to enlarge it.
+
+1. **Request** — `request_full_res(path, ctx)` checks `full_res` and `full_res_queued`. If the thumbnail already has `ThumbState::Failed` for this path, the request is skipped entirely (file known missing). Otherwise inserts into `full_res_queued` and spawns a pool task.
+2. **Decode** — pool task calls `load_full_res`: opens the file at native resolution (capped at 4096×4096 px to bound memory), converts to `RGBA8`, wraps in `egui::ColorImage`.
+3. **Return** — task sends `(path, Option<ColorImage>)` over `full_res_tx`.
+4. **Upload** — `poll_full_res()` called each frame drains `full_res_rx`. Before inserting, it calls `full_res_queued.remove(&path)`: if the path is no longer queued (because navigation cleared it), the result is discarded immediately and the texture is never stored. This prevents stale in-flight loads from leaking GPU memory after the user has navigated away.
+
+**Eviction**: `full_res` and `full_res_queued` are both cleared whenever `next_view` is set (Back, Prev, Next, Esc-to-grid). Dropping `ThumbState::Loaded(handle)` releases the `TextureHandle`, which decrements the egui reference count and frees the GPU texture.
+
+### 7.3 Error display
+
+| State | Thumbnail area | Enlarged area |
+|---|---|---|
+| Loading | ⏳ spinner placeholder | Spinner + "Loading…" label |
+| `ThumbState::Failed` | ✕ icon + "File not found" label | Red "Failed to load image" label |
+| `ThumbState::Loaded` | Scaled image (clickable) | Full-res image fitted to panel (clickable) |
 
 ---
 
@@ -258,9 +307,10 @@ I/O errors are silently discarded; a future improvement would surface them via `
 |---|---|---|
 | UI event loop | Main thread | None |
 | Search | `std::thread::spawn` (one at a time) | `discover_files` (I/O), `par_iter` extraction + matching (CPU) |
-| Thumbnail loading | `rayon::ThreadPool` (4 threads) | `image::open` + decode (I/O + CPU) |
+| Thumbnail loading | `rayon::ThreadPool` (4 threads) | `image::open` + decode + scale (I/O + CPU) |
+| Full-res loading | same `rayon::ThreadPool` | `image::open` + decode at native resolution (I/O + CPU) |
 
-Only one search thread runs at a time — the Search button is disabled while `searching` is true. Thumbnails load concurrently with ongoing searches and UI interaction.
+Only one search thread runs at a time — the Search button is disabled while `searching` is true. Thumbnail and full-res loads run concurrently with ongoing searches and UI interaction, sharing the same pool.
 
 ---
 
@@ -323,6 +373,10 @@ Re-filtering the existing `Vec<MatchResult>` avoids re-scanning the filesystem a
 
 `ips::types::MatchMode` does not derive `PartialEq + Clone`, which `egui::selectable_value` requires. A local `MatchModeOpt` enum is defined in `main.rs` and mapped to `MatchMode` at Config construction time, keeping the GUI decoupled from the library's internal type constraints.
 
+### Separate full-res cache with stale-result guard
+
+Full-resolution images are cached in `full_res: HashMap<PathBuf, ThumbState>`, separate from `thumbnails`, so the two lifecycles do not interfere. When the user navigates away, both `full_res` and `full_res_queued` are cleared immediately. A pool task for the previous image may still be running at that point; when it eventually sends its result, `poll_full_res` uses `full_res_queued.remove(&path)` as an atomic gate — if the path is gone from the queue, the result is discarded and the texture is never uploaded. This prevents a race where an in-flight load completes after navigation and silently leaks a GPU texture.
+
 ### Regex validated before thread spawn
 
 Invalid regex is caught on the UI thread before spawning, producing an immediate `error_msg` without involving the background thread.
@@ -348,7 +402,6 @@ Tags containing `-alpha`, `-beta`, or `-rc` are automatically marked as pre-rele
 |---|---|
 | Cancellable search | `Arc<AtomicBool>` cancel token checked inside the `flat_map` closure |
 | Open image in viewer | `open::that(path)` on path click in detail view |
-| Larger detail preview | Configurable `DETAIL_THUMB_MAX`; or load full-resolution on demand |
 | Persistent settings | Serialize search parameters to a JSON config file on exit |
 | Dark / light theme toggle | `ctx.set_visuals(egui::Visuals::dark())` wired to a button |
 | Export error feedback | Surface `std::io::Error` from write operations in `error_msg` |

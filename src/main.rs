@@ -31,6 +31,18 @@ fn load_thumbnail(path: &PathBuf) -> Option<egui::ColorImage> {
     Some(egui::ColorImage::from_rgba_unmultiplied(size, rgba.as_raw()))
 }
 
+fn load_full_res(path: &PathBuf) -> Option<egui::ColorImage> {
+    let img = image::open(path).ok()?;
+    let img = if img.width() > 4096 || img.height() > 4096 {
+        img.thumbnail(4096, 4096)
+    } else {
+        img
+    };
+    let rgba = img.to_rgba8();
+    let size = [rgba.width() as usize, rgba.height() as usize];
+    Some(egui::ColorImage::from_rgba_unmultiplied(size, rgba.as_raw()))
+}
+
 enum ThumbState {
     Loaded(egui::TextureHandle),
     Failed,
@@ -118,12 +130,18 @@ struct IpsGuiApp {
     rx: Option<Receiver<(Vec<MatchResult>, f64)>>,
 
     view_mode: ViewMode,
+    detail_image_enlarged: bool,
 
     thumb_pool: rayon::ThreadPool,
     thumb_result_tx: Sender<(PathBuf, Option<egui::ColorImage>)>,
     thumb_rx: Receiver<(PathBuf, Option<egui::ColorImage>)>,
     thumb_queued: HashSet<PathBuf>,
     thumbnails: HashMap<PathBuf, ThumbState>,
+
+    full_res_tx: Sender<(PathBuf, Option<egui::ColorImage>)>,
+    full_res_rx: Receiver<(PathBuf, Option<egui::ColorImage>)>,
+    full_res_queued: HashSet<PathBuf>,
+    full_res: HashMap<PathBuf, ThumbState>,
 }
 
 impl IpsGuiApp {
@@ -135,6 +153,7 @@ impl IpsGuiApp {
             .build()
             .unwrap();
         let (res_tx, res_rx) = mpsc::channel();
+        let (full_res_tx, full_res_rx) = mpsc::channel();
 
         Self {
             query: String::new(),
@@ -150,11 +169,16 @@ impl IpsGuiApp {
             error_msg: None,
             rx: None,
             view_mode: ViewMode::Grid,
+            detail_image_enlarged: false,
             thumb_pool: pool,
             thumb_result_tx: res_tx,
             thumb_rx: res_rx,
             thumb_queued: HashSet::new(),
             thumbnails: HashMap::new(),
+            full_res_tx,
+            full_res_rx,
+            full_res_queued: HashSet::new(),
+            full_res: HashMap::new(),
         }
     }
 
@@ -187,6 +211,42 @@ impl IpsGuiApp {
                 None => ThumbState::Failed,
             };
             self.thumbnails.insert(path, state);
+        }
+    }
+
+    fn request_full_res(&mut self, path: PathBuf, ctx: &egui::Context) {
+        if self.full_res.contains_key(&path) || self.full_res_queued.contains(&path) {
+            return;
+        }
+        self.full_res_queued.insert(path.clone());
+        let tx = self.full_res_tx.clone();
+        let ctx2 = ctx.clone();
+        self.thumb_pool.spawn(move || {
+            let img = load_full_res(&path);
+            let _ = tx.send((path, img));
+            ctx2.request_repaint();
+        });
+    }
+
+    fn poll_full_res(&mut self, ctx: &egui::Context) {
+        while let Ok((path, img)) = self.full_res_rx.try_recv() {
+            // If the path is no longer queued (navigation cleared it), discard the result
+            // so the stale texture is never stored and leaks no memory.
+            if !self.full_res_queued.remove(&path) {
+                continue;
+            }
+            let state = match img {
+                Some(color_img) => {
+                    let handle = ctx.load_texture(
+                        format!("fullres_{}", path.to_string_lossy()),
+                        color_img,
+                        egui::TextureOptions::LINEAR,
+                    );
+                    ThumbState::Loaded(handle)
+                }
+                None => ThumbState::Failed,
+            };
+            self.full_res.insert(path, state);
         }
     }
 
@@ -341,6 +401,7 @@ impl eframe::App for IpsGuiApp {
         }
 
         self.poll_thumbs(ctx);
+        self.poll_full_res(ctx);
 
         // ── Left panel ───────────────────────────────────────────────────────
         egui::SidePanel::left("params")
@@ -454,6 +515,7 @@ impl eframe::App for IpsGuiApp {
         let mut grid_vis: HashSet<PathBuf> = HashSet::new();
         let mut next_view: Option<ViewMode> = None;
         let mut copied_text: Option<String> = None;
+        let mut toggle_enlarged = false;
 
         egui::CentralPanel::default().show(ctx, |ui| {
             match self.view_mode {
@@ -609,12 +671,20 @@ impl eframe::App for IpsGuiApp {
                         Some(ThumbState::Loaded(h)) => Some(h.clone()),
                         _ => None,
                     };
+                    let thumb_failed = matches!(
+                        self.thumbnails.get(&result.record.path),
+                        Some(ThumbState::Failed)
+                    );
                     let total = self.results.len();
 
                     // Keyboard navigation
                     ui.input(|i| {
                         if i.key_pressed(egui::Key::Escape) {
-                            next_view = Some(ViewMode::Grid);
+                            if self.detail_image_enlarged {
+                                toggle_enlarged = true;
+                            } else {
+                                next_view = Some(ViewMode::Grid);
+                            }
                         } else if i.key_pressed(egui::Key::ArrowRight) && idx + 1 < total {
                             next_view = Some(ViewMode::Detail(idx + 1));
                         } else if i.key_pressed(egui::Key::ArrowLeft) && idx > 0 {
@@ -647,115 +717,188 @@ impl eframe::App for IpsGuiApp {
                     ui.separator();
                     ui.add_space(4.0);
 
-                    // ── Two-column layout: image left, info right ────────────
-                    egui::ScrollArea::vertical()
-                        .id_salt("detail_scroll")
-                        .auto_shrink([false, false])
-                        .show(ui, |ui| {
-                            ui.horizontal_top(|ui| {
-                                // Left: image
-                                ui.vertical(|ui| {
-                                    if let Some(tex) = &thumb {
-                                        let ts = tex.size_vec2();
-                                        let scale = (DETAIL_THUMB_MAX / ts.x)
-                                            .min(DETAIL_THUMB_MAX / ts.y)
-                                            .min(1.0);
-                                        let ds = ts * scale;
-                                        let (r, _) =
-                                            ui.allocate_exact_size(ds, egui::Sense::hover());
-                                        ui.painter().image(
-                                            tex.id(),
-                                            r,
-                                            egui::Rect::from_min_max(
-                                                egui::pos2(0.0, 0.0),
-                                                egui::pos2(1.0, 1.0),
-                                            ),
-                                            egui::Color32::WHITE,
-                                        );
-                                    } else if is_img {
-                                        let ph = egui::vec2(DETAIL_THUMB_MAX, DETAIL_THUMB_MAX);
-                                        let (r, _) =
-                                            ui.allocate_exact_size(ph, egui::Sense::hover());
-                                        ui.painter().rect_filled(
-                                            r,
-                                            6.0,
-                                            egui::Color32::from_gray(30),
-                                        );
-                                        ui.painter().text(
-                                            r.center(),
-                                            egui::Align2::CENTER_CENTER,
-                                            "⏳",
-                                            egui::FontId::proportional(40.0),
-                                            egui::Color32::GRAY,
-                                        );
-                                    } else {
-                                        let ph = egui::vec2(DETAIL_THUMB_MAX, DETAIL_THUMB_MAX);
-                                        let (r, _) =
-                                            ui.allocate_exact_size(ph, egui::Sense::hover());
-                                        ui.painter().rect_filled(
-                                            r,
-                                            6.0,
-                                            egui::Color32::from_gray(30),
-                                        );
-                                        ui.painter().text(
-                                            r.center(),
-                                            egui::Align2::CENTER_CENTER,
-                                            "📄",
-                                            egui::FontId::proportional(60.0),
-                                            egui::Color32::GRAY,
-                                        );
-                                    }
-                                });
+                    if self.detail_image_enlarged {
+                        // ── Full-res image fitted to the panel ──────────────
+                        let avail = ui.available_size();
+                        let full_tex = match self.full_res.get(&result.record.path) {
+                            Some(ThumbState::Loaded(h)) => Some(h.clone()),
+                            _ => None,
+                        };
+                        let loading = self.full_res_queued.contains(&result.record.path);
 
-                                ui.add_space(12.0);
-                                ui.separator();
-                                ui.add_space(8.0);
-
-                                // Right: metadata + prompt
-                                ui.vertical(|ui| {
-                                    ui.label(
-                                        egui::RichText::new(filename.as_ref())
-                                            .strong()
-                                            .size(16.0),
-                                    );
-                                    ui.add_space(6.0);
-
-                                    ui.horizontal(|ui| {
-                                        ui.label(
-                                            egui::RichText::new(&path_str)
-                                                .color(egui::Color32::from_rgb(80, 190, 230))
-                                                .small(),
-                                        );
+                        if let Some(tex) = full_tex {
+                            let ts = tex.size_vec2();
+                            let scale = (avail.x / ts.x).min(avail.y / ts.y);
+                            let ds = ts * scale;
+                            let (full_rect, resp) =
+                                ui.allocate_exact_size(avail, egui::Sense::click());
+                            ui.painter().image(
+                                tex.id(),
+                                egui::Rect::from_center_size(full_rect.center(), ds),
+                                egui::Rect::from_min_max(
+                                    egui::pos2(0.0, 0.0),
+                                    egui::pos2(1.0, 1.0),
+                                ),
+                                egui::Color32::WHITE,
+                            );
+                            let resp = resp.on_hover_text("Click to restore");
+                            if resp.clicked() {
+                                toggle_enlarged = true;
+                            }
+                        } else if loading {
+                            ui.vertical_centered(|ui| {
+                                ui.add_space(avail.y * 0.4);
+                                ui.spinner();
+                                ui.label("Loading…");
+                            });
+                        } else {
+                            ui.vertical_centered(|ui| {
+                                ui.add_space(avail.y * 0.4);
+                                ui.colored_label(
+                                    egui::Color32::from_rgb(200, 80, 80),
+                                    "Failed to load image",
+                                );
+                            });
+                        }
+                    } else {
+                        // ── Two-column layout: image left, info right ────────
+                        egui::ScrollArea::vertical()
+                            .id_salt("detail_scroll")
+                            .auto_shrink([false, false])
+                            .show(ui, |ui| {
+                                ui.horizontal_top(|ui| {
+                                    // Left: image (clickable to enlarge)
+                                    ui.vertical(|ui| {
+                                        if let Some(tex) = &thumb {
+                                            let ts = tex.size_vec2();
+                                            let scale = (DETAIL_THUMB_MAX / ts.x)
+                                                .min(DETAIL_THUMB_MAX / ts.y)
+                                                .min(1.0);
+                                            let ds = ts * scale;
+                                            let (r, resp) =
+                                                ui.allocate_exact_size(ds, egui::Sense::click());
+                                            ui.painter().image(
+                                                tex.id(),
+                                                r,
+                                                egui::Rect::from_min_max(
+                                                    egui::pos2(0.0, 0.0),
+                                                    egui::pos2(1.0, 1.0),
+                                                ),
+                                                egui::Color32::WHITE,
+                                            );
+                                            let resp = resp.on_hover_text("Click to enlarge");
+                                            if resp.clicked() {
+                                                toggle_enlarged = true;
+                                            }
+                                        } else if thumb_failed {
+                                            let ph =
+                                                egui::vec2(DETAIL_THUMB_MAX, DETAIL_THUMB_MAX);
+                                            let (r, _) =
+                                                ui.allocate_exact_size(ph, egui::Sense::hover());
+                                            ui.painter().rect_filled(
+                                                r,
+                                                6.0,
+                                                egui::Color32::from_gray(30),
+                                            );
+                                            ui.painter().text(
+                                                r.center(),
+                                                egui::Align2::CENTER_CENTER,
+                                                "✕",
+                                                egui::FontId::proportional(40.0),
+                                                egui::Color32::from_rgb(200, 80, 80),
+                                            );
+                                            ui.label(
+                                                egui::RichText::new("File not found")
+                                                    .color(egui::Color32::from_rgb(200, 80, 80))
+                                                    .small(),
+                                            );
+                                        } else if is_img {
+                                            let ph =
+                                                egui::vec2(DETAIL_THUMB_MAX, DETAIL_THUMB_MAX);
+                                            let (r, _) =
+                                                ui.allocate_exact_size(ph, egui::Sense::hover());
+                                            ui.painter().rect_filled(
+                                                r,
+                                                6.0,
+                                                egui::Color32::from_gray(30),
+                                            );
+                                            ui.painter().text(
+                                                r.center(),
+                                                egui::Align2::CENTER_CENTER,
+                                                "⏳",
+                                                egui::FontId::proportional(40.0),
+                                                egui::Color32::GRAY,
+                                            );
+                                        } else {
+                                            let ph =
+                                                egui::vec2(DETAIL_THUMB_MAX, DETAIL_THUMB_MAX);
+                                            let (r, _) =
+                                                ui.allocate_exact_size(ph, egui::Sense::hover());
+                                            ui.painter().rect_filled(
+                                                r,
+                                                6.0,
+                                                egui::Color32::from_gray(30),
+                                            );
+                                            ui.painter().text(
+                                                r.center(),
+                                                egui::Align2::CENTER_CENTER,
+                                                "📄",
+                                                egui::FontId::proportional(60.0),
+                                                egui::Color32::GRAY,
+                                            );
+                                        }
                                     });
-                                    if ui
-                                        .button("📋  Copy path")
-                                        .on_hover_text("Copy full path to clipboard")
-                                        .clicked()
-                                    {
-                                        copied_text = Some(path_str.clone());
-                                    }
 
-                                    ui.add_space(8.0);
-                                    ui.label(
-                                        egui::RichText::new(format!("Generator: {generator}"))
-                                            .color(egui::Color32::from_gray(180)),
-                                    );
-                                    if let Some(s) = score {
-                                        ui.label(
-                                            egui::RichText::new(format!("Score: {s}"))
-                                                .color(egui::Color32::from_rgb(130, 200, 130)),
-                                        );
-                                    }
-
-                                    ui.add_space(10.0);
+                                    ui.add_space(12.0);
                                     ui.separator();
-                                    ui.add_space(4.0);
-                                    ui.label(egui::RichText::new("Prompt:").strong());
-                                    ui.add_space(4.0);
-                                    ui.label(result.record.prompt.as_str());
+                                    ui.add_space(8.0);
+
+                                    // Right: metadata + prompt
+                                    ui.vertical(|ui| {
+                                        ui.label(
+                                            egui::RichText::new(filename.as_ref())
+                                                .strong()
+                                                .size(16.0),
+                                        );
+                                        ui.add_space(6.0);
+
+                                        ui.horizontal(|ui| {
+                                            ui.label(
+                                                egui::RichText::new(&path_str)
+                                                    .color(egui::Color32::from_rgb(80, 190, 230))
+                                                    .small(),
+                                            );
+                                        });
+                                        if ui
+                                            .button("📋  Copy path")
+                                            .on_hover_text("Copy full path to clipboard")
+                                            .clicked()
+                                        {
+                                            copied_text = Some(path_str.clone());
+                                        }
+
+                                        ui.add_space(8.0);
+                                        ui.label(
+                                            egui::RichText::new(format!("Generator: {generator}"))
+                                                .color(egui::Color32::from_gray(180)),
+                                        );
+                                        if let Some(s) = score {
+                                            ui.label(
+                                                egui::RichText::new(format!("Score: {s}"))
+                                                    .color(egui::Color32::from_rgb(130, 200, 130)),
+                                            );
+                                        }
+
+                                        ui.add_space(10.0);
+                                        ui.separator();
+                                        ui.add_space(4.0);
+                                        ui.label(egui::RichText::new("Prompt:").strong());
+                                        ui.add_space(4.0);
+                                        ui.label(result.record.prompt.as_str());
+                                    });
                                 });
                             });
-                        });
+                    }
                 }
             }
         });
@@ -782,7 +925,25 @@ impl eframe::App for IpsGuiApp {
             ctx.output_mut(|o| o.copied_text = text);
             self.status_msg = "Path copied to clipboard.".into();
         }
+        if toggle_enlarged {
+            self.detail_image_enlarged = !self.detail_image_enlarged;
+            if self.detail_image_enlarged {
+                if let ViewMode::Detail(idx) = self.view_mode {
+                    if let Some(result) = self.results.get(idx) {
+                        let path = result.record.path.clone();
+                        let already_failed =
+                            matches!(self.thumbnails.get(&path), Some(ThumbState::Failed));
+                        if is_image(&path) && !already_failed {
+                            self.request_full_res(path, ctx);
+                        }
+                    }
+                }
+            }
+        }
         if let Some(v) = next_view {
+            self.detail_image_enlarged = false;
+            self.full_res.clear();
+            self.full_res_queued.clear();
             self.view_mode = v;
         }
     }

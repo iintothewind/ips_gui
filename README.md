@@ -52,11 +52,13 @@ Matched images are displayed as a 100×100 px thumbnail grid, sorted alphabetica
 Opens when you click a thumbnail. Shows:
 
 - **Back / Prev / Next buttons** — navigate between the grid and adjacent results.
-- **Image preview** — up to 300×300 px, loaded asynchronously.
+- **Image preview** — up to 300×300 px thumbnail, loaded asynchronously. Click it to load the full-resolution image fitted to the panel. Click the enlarged image again to restore the two-column layout.
 - **File path** — click **📋 Copy path** to copy to clipboard.
 - **Generator** — detected source: `a1111`, `comfyui`, `novelai`, `invokeai`, or `unknown`.
 - **Score** — visible in Fuzzy mode only.
 - **Full prompt** — complete extracted metadata text.
+
+If the source file has been deleted or is unreadable, a ✕ placeholder is shown in place of the image and enlarging is disabled.
 
 ### Keyboard shortcuts
 
@@ -64,7 +66,7 @@ Opens when you click a thumbnail. Shows:
 |---|---|
 | **Enter** (Query focused) | Start search |
 | **← / →** | Previous / next result in detail view |
-| **Esc** | Return to grid view |
+| **Esc** | Collapse enlarged image (if open), or return to grid view |
 
 ### Status bar (bottom)
 
