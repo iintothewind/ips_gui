@@ -5,8 +5,55 @@ use serde::Serialize;
 pub struct PromptRecord {
     pub path: PathBuf,
     pub prompt: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub loras: Vec<LoraInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub positive_prompt: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub negative_prompt: Option<String>,
     pub generator: Generator,
     pub metadata_key: &'static str,
+}
+
+impl PromptRecord {
+    pub fn with_details(
+        path: PathBuf,
+        prompt: String,
+        generator: Generator,
+        metadata_key: &'static str,
+        details: PromptDetails,
+    ) -> Self {
+        Self {
+            path,
+            prompt,
+            model: details.model,
+            loras: details.loras,
+            positive_prompt: details.positive_prompt,
+            negative_prompt: details.negative_prompt,
+            generator,
+            metadata_key,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct PromptDetails {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub loras: Vec<LoraInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub positive_prompt: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub negative_prompt: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct LoraInfo {
+    pub name: String,
+    pub weight: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

@@ -7,7 +7,7 @@ use ips::{
     discovery::{discover_files, is_image},
     extract::extract_prompt,
     matcher::match_record,
-    types::{Config, MatchMode, MatchResult, PromptRecord},
+    types::{Config, Generator, MatchMode, MatchResult, PromptDetails, PromptRecord},
 };
 use rayon::prelude::*;
 use std::{
@@ -142,6 +142,8 @@ struct IpsGuiApp {
     full_res_rx: Receiver<(PathBuf, Option<egui::ColorImage>)>,
     full_res_queued: HashSet<PathBuf>,
     full_res: HashMap<PathBuf, ThumbState>,
+
+    drag_over_params_panel: bool,
 }
 
 impl IpsGuiApp {
@@ -179,6 +181,7 @@ impl IpsGuiApp {
             full_res_rx,
             full_res_queued: HashSet::new(),
             full_res: HashMap::new(),
+            drag_over_params_panel: false,
         }
     }
 
@@ -319,6 +322,49 @@ impl IpsGuiApp {
         self.view_mode = ViewMode::Grid;
     }
 
+    fn show_dropped_image(&mut self, path: PathBuf, ctx: &egui::Context) {
+        self.searching = false;
+        self.rx = None;
+        self.error_msg = None;
+        self.results.clear();
+        self.thumbnails.clear();
+        self.thumb_queued.clear();
+        self.full_res.clear();
+        self.full_res_queued.clear();
+        self.detail_image_enlarged = false;
+
+        let mut records = extract_prompt(&path, false);
+        if records.is_empty() {
+            records.push(PromptRecord::with_details(
+                path.clone(),
+                String::new(),
+                Generator::Unknown,
+                "",
+                PromptDetails::default(),
+            ));
+        }
+
+        self.results = records
+            .into_iter()
+            .map(|record| MatchResult {
+                record,
+                score: None,
+            })
+            .collect();
+
+        let count = self.results.len();
+        self.view_mode = ViewMode::Detail(0);
+        self.status_msg = if count == 1 {
+            format!("Loaded {}", path.display())
+        } else {
+            format!("Loaded {} ({count} metadata records)", path.display())
+        };
+
+        if is_image(&path) {
+            self.request_thumb(path, ctx);
+        }
+    }
+
     fn export_json(&self) {
         let Some(path) = rfd::FileDialog::new()
             .add_filter("JSON", &["json"])
@@ -334,6 +380,10 @@ impl IpsGuiApp {
             path: String,
             generator: String,
             prompt: &'a str,
+            model: Option<&'a str>,
+            loras: &'a [crate::ips::types::LoraInfo],
+            positive_prompt: Option<&'a str>,
+            negative_prompt: Option<&'a str>,
             #[serde(skip_serializing_if = "Option::is_none")]
             score: Option<i64>,
         }
@@ -345,6 +395,10 @@ impl IpsGuiApp {
                 path: r.record.path.display().to_string(),
                 generator: r.record.generator.to_string(),
                 prompt: &r.record.prompt,
+                model: r.record.model.as_deref(),
+                loras: &r.record.loras,
+                positive_prompt: r.record.positive_prompt.as_deref(),
+                negative_prompt: r.record.negative_prompt.as_deref(),
                 score: r.score,
             })
             .collect();
@@ -364,12 +418,32 @@ impl IpsGuiApp {
         };
 
         if let Ok(mut wtr) = csv::Writer::from_path(path) {
-            let _ = wtr.write_record(["path", "generator", "prompt", "score"]);
+            let _ = wtr.write_record([
+                "path",
+                "generator",
+                "model",
+                "loras",
+                "positive_prompt",
+                "negative_prompt",
+                "prompt",
+                "score",
+            ]);
             for r in &self.results {
                 let score_str = r.score.map(|s| s.to_string()).unwrap_or_default();
+                let loras = r
+                    .record
+                    .loras
+                    .iter()
+                    .map(|l| format!("{}: {}", l.name, l.weight))
+                    .collect::<Vec<_>>()
+                    .join(" | ");
                 let _ = wtr.write_record([
                     &r.record.path.display().to_string(),
                     &r.record.generator.to_string(),
+                    r.record.model.as_deref().unwrap_or_default(),
+                    &loras,
+                    r.record.positive_prompt.as_deref().unwrap_or_default(),
+                    r.record.negative_prompt.as_deref().unwrap_or_default(),
                     &r.record.prompt,
                     &score_str,
                 ]);
@@ -404,7 +478,7 @@ impl eframe::App for IpsGuiApp {
         self.poll_full_res(ctx);
 
         // ── Left panel ───────────────────────────────────────────────────────
-        egui::SidePanel::left("params")
+        let params_panel = egui::SidePanel::left("params")
             .exact_width(ctx.screen_rect().width() * 0.30)
             .show(ctx, |ui| {
                 ui.add_space(10.0);
@@ -493,6 +567,49 @@ impl eframe::App for IpsGuiApp {
                     });
                 }
             });
+
+        let dropped_files = ctx.input(|i| i.raw.dropped_files.clone());
+        let has_hovered_files = ctx.input(|i| !i.raw.hovered_files.is_empty());
+        let hover_pos = ctx.input(|i| i.pointer.latest_pos());
+        let hover_over_params = hover_pos
+            .map(|pos| params_panel.response.rect.contains(pos))
+            .unwrap_or(false);
+        if !dropped_files.is_empty()
+            && (hover_pos.is_none() || hover_over_params || self.drag_over_params_panel)
+        {
+            let dropped_paths: Vec<PathBuf> = dropped_files
+                .iter()
+                .filter_map(|file| file.path.clone())
+                .collect();
+            let image_paths: Vec<PathBuf> = dropped_paths
+                .iter()
+                .filter(|path| path.is_file() && is_image(path))
+                .cloned()
+                .collect();
+            let directory_paths: Vec<PathBuf> = dropped_paths
+                .iter()
+                .filter(|path| path.is_dir())
+                .cloned()
+                .collect();
+
+            if dropped_paths.len() == 1 && directory_paths.len() == 1 {
+                let path = &directory_paths[0];
+                self.search_path = path.display().to_string();
+                self.error_msg = None;
+                self.status_msg = "Directory set from dropped folder. Enter a query and click Search.".into();
+            } else if image_paths.len() == 1 && dropped_paths.len() == 1 {
+                self.show_dropped_image(image_paths[0].clone(), ctx);
+            } else if image_paths.len() > 1 {
+                self.error_msg = Some("Please drop one image at a time.".into());
+            } else {
+                self.error_msg = Some("Dropped file is not a supported image.".into());
+            }
+        }
+
+        self.drag_over_params_panel = has_hovered_files && hover_over_params;
+        if self.drag_over_params_panel {
+            ctx.request_repaint_after(std::time::Duration::from_millis(80));
+        }
 
         // ── Bottom status bar ────────────────────────────────────────────────
         egui::TopBottomPanel::bottom("status_bar").show(ctx, |ui| {
@@ -892,9 +1009,43 @@ impl eframe::App for IpsGuiApp {
                                         ui.add_space(10.0);
                                         ui.separator();
                                         ui.add_space(4.0);
-                                        ui.label(egui::RichText::new("Prompt:").strong());
+
+                                        ui.label(egui::RichText::new("Model:").strong());
                                         ui.add_space(4.0);
-                                        ui.label(result.record.prompt.as_str());
+                                        ui.label(result.record.model.as_deref().unwrap_or_default());
+                                        ui.add_space(10.0);
+
+                                        ui.label(egui::RichText::new("LoRA:").strong());
+                                        ui.add_space(4.0);
+                                        if result.record.loras.is_empty() {
+                                            ui.label("");
+                                        } else {
+                                            for lora in &result.record.loras {
+                                                ui.label(format!("{}: {}", lora.name, lora.weight));
+                                            }
+                                        }
+                                        ui.add_space(10.0);
+
+                                        ui.label(egui::RichText::new("Positive prompt:").strong());
+                                        ui.add_space(4.0);
+                                        ui.label(
+                                            result
+                                                .record
+                                                .positive_prompt
+                                                .as_deref()
+                                                .unwrap_or_default(),
+                                        );
+                                        ui.add_space(10.0);
+
+                                        ui.label(egui::RichText::new("Negative prompt:").strong());
+                                        ui.add_space(4.0);
+                                        ui.label(
+                                            result
+                                                .record
+                                                .negative_prompt
+                                                .as_deref()
+                                                .unwrap_or_default(),
+                                        );
                                     });
                                 });
                             });

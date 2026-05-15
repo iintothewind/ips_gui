@@ -2,7 +2,7 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 use crate::ips::types::{Generator, PromptRecord};
-use super::comfyui;
+use super::{a1111, comfyui};
 
 const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
 
@@ -106,34 +106,37 @@ fn parse_itxt_chunk(data: &[u8]) -> Option<(String, String)> {
 fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<PromptRecord>) {
     match keyword {
         "parameters" => {
-            results.push(PromptRecord {
-                path: path.to_path_buf(),
-                prompt: value.to_string(),
-                generator: Generator::A1111,
-                metadata_key: "parameters",
-            });
+            results.push(PromptRecord::with_details(
+                path.to_path_buf(),
+                value.to_string(),
+                Generator::A1111,
+                "parameters",
+                a1111::extract_details(value),
+            ));
         }
         "prompt" => {
             match serde_json::from_str::<serde_json::Value>(value) {
                 Ok(json) => {
                     let prompts = comfyui::extract_from_workflow(&json);
                     if !prompts.is_empty() {
-                        results.push(PromptRecord {
-                            path: path.to_path_buf(),
-                            prompt: prompts.join(" | "),
-                            generator: Generator::ComfyUI,
-                            metadata_key: "prompt",
-                        });
+                        results.push(PromptRecord::with_details(
+                            path.to_path_buf(),
+                            prompts.join(" | "),
+                            Generator::ComfyUI,
+                            "prompt",
+                            comfyui::extract_details_from_workflow(&json),
+                        ));
                     }
                 }
                 Err(_) => {
                     if !value.trim().is_empty() {
-                        results.push(PromptRecord {
-                            path: path.to_path_buf(),
-                            prompt: value.to_string(),
-                            generator: Generator::Unknown,
-                            metadata_key: "prompt",
-                        });
+                        results.push(PromptRecord::with_details(
+                            path.to_path_buf(),
+                            value.to_string(),
+                            Generator::Unknown,
+                            "prompt",
+                            a1111::extract_details(value),
+                        ));
                     }
                 }
             }
@@ -142,34 +145,37 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
             match serde_json::from_str::<serde_json::Value>(value) {
                 Ok(json) => {
                     if let Some(prompt) = json.get("prompt").and_then(|v| v.as_str()) {
-                        results.push(PromptRecord {
-                            path: path.to_path_buf(),
-                            prompt: prompt.to_string(),
-                            generator: Generator::NovelAI,
-                            metadata_key: "Comment",
-                        });
+                        results.push(PromptRecord::with_details(
+                            path.to_path_buf(),
+                            prompt.to_string(),
+                            Generator::NovelAI,
+                            "Comment",
+                            a1111::extract_details(prompt),
+                        ));
                     }
                 }
                 Err(_) => {
                     if !value.trim().is_empty() {
-                        results.push(PromptRecord {
-                            path: path.to_path_buf(),
-                            prompt: value.to_string(),
-                            generator: Generator::Unknown,
-                            metadata_key: "Comment",
-                        });
+                        results.push(PromptRecord::with_details(
+                            path.to_path_buf(),
+                            value.to_string(),
+                            Generator::Unknown,
+                            "Comment",
+                            a1111::extract_details(value),
+                        ));
                     }
                 }
             }
         }
         "Description" => {
             if !value.trim().is_empty() {
-                results.push(PromptRecord {
-                    path: path.to_path_buf(),
-                    prompt: value.to_string(),
-                    generator: Generator::NovelAI,
-                    metadata_key: "Description",
-                });
+                results.push(PromptRecord::with_details(
+                    path.to_path_buf(),
+                    value.to_string(),
+                    Generator::NovelAI,
+                    "Description",
+                    a1111::extract_details(value),
+                ));
             }
         }
         _ => {}

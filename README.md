@@ -43,6 +43,18 @@ Pre-built binaries for Windows (x86-64), macOS (Apple Silicon), and Linux (x86-6
 | **Search within results** | Visible only when results are present. When checked, Search filters the current result set instead of re-scanning the filesystem. Useful for iterative refinement. |
 | **Search button** | Disabled while a search is running or the query is empty. |
 
+### Drag and drop
+
+Drop items onto the left Search Parameters panel:
+
+| Drop item | Behavior |
+|---|---|
+| **One supported image** | Clears current results and opens the image detail view with parsed metadata. |
+| **Multiple supported images** | Rejected with `Please drop one image at a time.` |
+| **One folder** | Sets **Directory** to that folder only. It does not auto-search; enter a query and click **Search**. |
+
+Supported dropped image formats are PNG, JPEG/JPG, and WebP.
+
 ### Results — Grid view (central panel)
 
 Matched images are displayed as a 100×100 px thumbnail grid, sorted alphabetically by path. Non-image files show a 📄 icon. Click any cell to open the detail view.
@@ -56,9 +68,12 @@ Opens when you click a thumbnail. Shows:
 - **File path** — click **📋 Copy path** to copy to clipboard.
 - **Generator** — detected source: `a1111`, `comfyui`, `novelai`, `invokeai`, or `unknown`.
 - **Score** — visible in Fuzzy mode only.
-- **Full prompt** — complete extracted metadata text.
+- **Model** — parsed model/checkpoint name when available.
+- **LoRA** — parsed LoRA list as `lora name: weight` when available.
+- **Positive prompt** — parsed positive prompt when available.
+- **Negative prompt** — parsed negative prompt when available.
 
-If the source file has been deleted or is unreadable, a ✕ placeholder is shown in place of the image and enlarging is disabled.
+If a field cannot be parsed from the image metadata, it is left blank. If the source file has been deleted or is unreadable, a ✕ placeholder is shown in place of the image and enlarging is disabled.
 
 ### Keyboard shortcuts
 
@@ -76,18 +91,20 @@ Displays a spinner while searching, result count and elapsed time on completion,
 
 | Button | Output |
 |---|---|
-| **JSON** | Array of `{ path, generator, prompt, score? }` objects (pretty-printed). |
-| **CSV** | RFC 4180, columns: `path`, `generator`, `prompt`, `score`. |
+| **JSON** | Array of `{ path, generator, prompt, model?, loras?, positive_prompt?, negative_prompt?, score? }` objects (pretty-printed). |
+| **CSV** | RFC 4180, columns: `path`, `generator`, `model`, `loras`, `positive_prompt`, `negative_prompt`, `prompt`, `score`. |
 
 ## Supported Generators
 
-| Generator | Formats |
+| Generator | Formats and metadata |
 |---|---|
-| Stable Diffusion A1111 / Forge | PNG (`parameters` tEXt chunk), JPEG (COM marker) |
-| ComfyUI | PNG (`prompt` workflow JSON in tEXt/iTXt) |
+| Stable Diffusion A1111 / Forge | PNG (`parameters` tEXt chunk), JPEG/WebP EXIF or XMP text where available. Parses `Negative prompt:`, `Model:`, and `<lora:name:weight>` tags. |
+| ComfyUI | PNG (`prompt` workflow JSON in tEXt/iTXt). Parses common checkpoint/UNET loaders, `LoraLoader`, `Power Lora Loader (rgthree)`, `KSampler`, `CFGGuider`, CLIP text encode nodes, and Qwen text prompt nodes. |
 | NovelAI | PNG (`Comment` JSON, `Description` chunk) |
 | InvokeAI | JPEG / WebP (XMP with `invokeai:` namespace) |
 | Generic | JPEG / WebP (XMP `dc:description`, EXIF `UserComment`) |
+
+JPEG and WebP files may contain incomplete or missing metadata depending on the generator/plugin that saved them. `ips_gui` treats missing or malformed metadata as a normal case and leaves parsed fields blank.
 
 ## Development
 

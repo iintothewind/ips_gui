@@ -59,15 +59,16 @@ fn match_regex(record: &PromptRecord, config: &Config) -> Option<MatchResult> {
 mod tests {
     use super::*;
     use std::path::PathBuf;
-    use crate::ips::types::Generator;
+    use crate::ips::types::{Generator, PromptDetails};
 
     fn make_record(prompt: &str) -> PromptRecord {
-        PromptRecord {
-            path: PathBuf::from("test.png"),
-            prompt: prompt.to_string(),
-            generator: Generator::Unknown,
-            metadata_key: "parameters",
-        }
+        PromptRecord::with_details(
+            PathBuf::from("test.png"),
+            prompt.to_string(),
+            Generator::Unknown,
+            "parameters",
+            PromptDetails::default(),
+        )
     }
 
     fn config(query: &str, mode: MatchMode) -> Config {

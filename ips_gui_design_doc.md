@@ -35,10 +35,10 @@
 Three concurrent actors:
 
 1. **UI thread** — runs the `eframe` event loop. Renders panels, polls channels, handles all input.
-2. **Search thread** — spawned by `std::thread::spawn` per search. Runs the full discovery → extraction → matching pipeline, sends one `SearchMsg::Done` back when complete.
+2. **Search thread** — spawned by `std::thread::spawn` per search. Runs the full discovery → extraction → matching pipeline, sends one `(Vec<MatchResult>, elapsed_seconds)` message back when complete.
 3. **Thumbnail pool** — a dedicated `rayon::ThreadPool` (4 threads) that loads and decodes both thumbnails and full-resolution images on demand. Results are sent back to the UI thread via two separate `mpsc` channels.
 
-The UI thread never blocks. It uses `try_recv()` on every frame for all channels.
+The UI thread also handles drag-and-drop events. Single-image drops are parsed synchronously because they only touch one file; directory drops only update the search path and never start a filesystem scan. The UI thread never blocks on full searches or image decoding. It uses `try_recv()` on every frame for all channels.
 
 ---
 
@@ -68,10 +68,9 @@ struct IpsGuiApp {
     // Search parameters (bound to left-panel widgets)
     query: String,
     search_path: String,
-    match_mode: MatchModeOpt,       // Exact | Fuzzy | Regex
+    match_mode: MatchMode,          // Exact | Fuzzy | Regex
     min_score: i64,                 // fuzzy threshold, 0–100
     no_recursive: bool,
-    verbose: bool,
     depth_str: String,              // raw text, parsed to Option<usize> at search time
     search_within_results: bool,
 
@@ -80,7 +79,7 @@ struct IpsGuiApp {
     results: Vec<MatchResult>,
     status_msg: String,
     error_msg: Option<String>,
-    rx: Option<Receiver<SearchMsg>>,
+    rx: Option<Receiver<(Vec<MatchResult>, f64)>>,
 
     // View
     view_mode: ViewMode,            // Grid | Detail(usize)
@@ -98,14 +97,32 @@ struct IpsGuiApp {
     full_res_rx: Receiver<(PathBuf, Option<ColorImage>)>,
     full_res_queued: HashSet<PathBuf>,
     full_res: HashMap<PathBuf, ThumbState>,
+
+    // Drag-and-drop
+    drag_over_params_panel: bool,
 }
 ```
-
-`MatchModeOpt` is a local enum mirroring `ips::types::MatchMode` with `PartialEq + Clone` added, which `egui::selectable_value` requires.
 
 `depth_str` is a raw string so the text field can hold partially-typed input without losing characters. Parsed at search time with `.trim().parse().ok()`.
 
 `ThumbState` is `Loaded(TextureHandle) | Failed`. Thumbnail textures are evicted when no longer visible in the grid (via `retain`). Full-res textures are dropped when navigating away from a detail item.
+
+`PromptRecord` is the metadata carrier in the result list. It keeps the original searchable `prompt` string for backwards-compatible matching, plus optional structured fields:
+
+```rust
+struct PromptRecord {
+    path: PathBuf,
+    prompt: String,
+    model: Option<String>,
+    loras: Vec<LoraInfo>,
+    positive_prompt: Option<String>,
+    negative_prompt: Option<String>,
+    generator: Generator,
+    metadata_key: &'static str,
+}
+```
+
+These structured fields are best-effort. Missing, incomplete, or malformed image metadata leaves the field blank instead of failing extraction.
 
 ---
 
@@ -134,11 +151,11 @@ IpsGuiApp::start_search()
     )
     .collect()                   → Vec<MatchResult>
   sort by path
-  tx.send(SearchMsg::Done(results, elapsed))
+  tx.send((results, elapsed))
   ctx.request_repaint()
        │
        ▼  (UI thread, next frame)
-  rx.try_recv() → Ok(...)
+  rx.try_recv() → Ok((results, elapsed))
   self.results = results; self.searching = false
 ```
 
@@ -158,7 +175,7 @@ IpsGuiApp::start_search()
     .filter_map(|rec| match_record(rec, &config))
     .collect()                   → Vec<MatchResult>
   sort by path
-  tx.send(SearchMsg::Done(results, elapsed))
+  tx.send((results, elapsed))
   ctx.request_repaint()
 ```
 
@@ -166,7 +183,43 @@ Skips `discover_files` and `extract_prompt` entirely. Works on already-extracted
 
 ---
 
-## 6. UI Layout
+### 5.3 Drag-and-drop shortcuts
+
+Drag-and-drop is handled after the left Search Parameters panel has been rendered, so the panel rectangle can be used to decide whether the drop applies to search parameters.
+
+| Drop item on left panel | Behavior |
+|---|---|
+| One supported image file (`png`, `jpg`, `jpeg`, `webp`) | Clears current results, extracts metadata for that one file, creates one or more `MatchResult` rows, and switches directly to `ViewMode::Detail(0)`. If the image has no metadata, an empty `PromptRecord` is still created so the image and path can be inspected. |
+| Multiple supported image files | Rejected with `Please drop one image at a time.` |
+| One directory | Sets `search_path` to that folder and updates the status text. It does not scan or search automatically. |
+
+This keeps the application focused on prompt search instead of turning directory drops into a bulk image browser. Large folders are only scanned when the user explicitly enters a query and clicks Search.
+
+---
+
+## 6. Metadata Extraction Model
+
+The low-level container parsers remain intentionally tolerant:
+
+| Parser | Existing responsibility |
+|---|---|
+| `png.rs` | Reads PNG `tEXt` / `iTXt` chunks before `IDAT`; handles invalid or truncated chunks by returning partial/empty results. |
+| `jpeg.rs` | Reads JPEG COM and APP1 XMP/EXIF segments; stops safely on scan data or malformed segments. |
+| `webp.rs` | Reads RIFF/WebP chunks; handles `XMP ` and `EXIF`, skips image data chunks without loading them. |
+| `exif.rs` | Decodes TIFF/EXIF `UserComment` in ASCII or UTF-16, big-endian or little-endian. Empty or invalid comments return `None`. |
+
+Structured metadata parsing is layered on top of the text/JSON extracted by those parsers:
+
+| Source | Structured extraction |
+|---|---|
+| A1111 / Forge-style text | `a1111.rs` splits `positive_prompt` and `negative_prompt` at `Negative prompt:`, parses `Model:`, and extracts LoRA tags of the form `<lora:name:weight>`. |
+| ComfyUI workflow JSON | `comfyui.rs` parses generation model names from common checkpoint/UNET loader nodes, LoRA entries from `LoraLoader` and `Power Lora Loader (rgthree)`, and positive/negative prompts by tracing `KSampler` / `CFGGuider` conditioning inputs to text encode nodes. |
+
+All structured fields are optional. If JSON is missing, truncated, plugin-specific, or not parseable, the original `prompt` string is preserved for search and the structured fields remain blank.
+
+---
+
+## 7. UI Layout
 
 ```text
 egui::SidePanel::left("params")       — 30 % of window width, fixed
@@ -189,6 +242,7 @@ Controls top to bottom:
 | Search within results checkbox | `checkbox` — visible only when `results` is non-empty |
 | Search button | `Button` inside `add_enabled_ui(!searching && !query.is_empty(), ...)` |
 | Export buttons | `horizontal`: JSON + CSV — visible only when `results` is non-empty |
+| Drag-and-drop target | Panel response rectangle. One image opens detail view; one folder fills Directory; multiple images are rejected. |
 
 ### Central panel — Grid view
 
@@ -219,11 +273,15 @@ Replaces the grid when `view_mode == ViewMode::Detail(idx)`. Two sub-layouts con
 │ preview │  │  Generator: …
 └─────────┘  │  Score: …  (fuzzy only)
   (click)    │  ──────────────
-             │  Prompt:
-             │  (full prompt text, wrapping label)
+             │  Model:
+             │  LoRA:
+             │  Positive prompt:
+             │  Negative prompt:
 ```
 
 Clicking the thumbnail sets `detail_image_enlarged = true` and fires `request_full_res`. If the thumbnail failed to load (file missing or unreadable), a ✕ placeholder is shown and clicking is disabled.
+
+The structured metadata fields are rendered as blank labels when parsing did not produce a value.
 
 **Enlarged layout** (`detail_image_enlarged = true`):
 
@@ -251,11 +309,11 @@ Keyboard events are consumed with `ui.input(|i| ...)` on every frame:
 
 ---
 
-## 7. Image Loading
+## 8. Image Loading
 
 Both thumbnail and full-resolution loading share the same `rayon::ThreadPool` (`THUMB_THREADS = 4`) and the same `ThumbState` enum, but use separate channels and caches so they are independently managed.
 
-### 7.1 Thumbnail loading
+### 8.1 Thumbnail loading
 
 1. **Request** — `request_thumb(path, ctx)` checks `thumbnails` and `thumb_queued`; if absent from both, inserts into `thumb_queued` and spawns a pool task.
 2. **Decode** — pool task calls `load_thumbnail`: opens the file with the `image` crate, scales to at most 300×300 px (`thumbnail(300, 300)`), converts to `RGBA8`, wraps in `egui::ColorImage`.
@@ -264,7 +322,7 @@ Both thumbnail and full-resolution loading share the same `rayon::ThreadPool` (`
 
 **Eviction** (grid mode only): after rendering, `thumbnails.retain` and `thumb_queued.retain` discard entries whose paths are not in the currently visible `grid_vis` set. Detail mode skips eviction to avoid re-decoding when navigating back.
 
-### 7.2 Full-resolution loading
+### 8.2 Full-resolution loading
 
 Triggered when the user clicks the thumbnail in detail view to enlarge it.
 
@@ -275,7 +333,7 @@ Triggered when the user clicks the thumbnail in detail view to enlarge it.
 
 **Eviction**: `full_res` and `full_res_queued` are both cleared whenever `next_view` is set (Back, Prev, Next, Esc-to-grid). Dropping `ThumbState::Loaded(handle)` releases the `TextureHandle`, which decrements the egui reference count and frees the GPU texture.
 
-### 7.3 Error display
+### 8.3 Error display
 
 | State | Thumbnail area | Enlarged area |
 |---|---|---|
@@ -285,7 +343,7 @@ Triggered when the user clicks the thumbnail in detail view to enlarge it.
 
 ---
 
-## 8. Export
+## 9. Export
 
 Both export functions:
 
@@ -293,15 +351,15 @@ Both export functions:
 2. Return immediately if the user cancels.
 3. Serialize `self.results` and write to the chosen path.
 
-**JSON** uses an inline `#[derive(Serialize)]` struct with `#[serde(skip_serializing_if = "Option::is_none")]` on `score`, so exact-mode results omit the score field entirely.
+**JSON** uses an inline `#[derive(Serialize)]` struct. Each row includes `path`, `generator`, `prompt`, `model`, `loras`, `positive_prompt`, `negative_prompt`, and optional `score`. Optional fields are omitted when empty.
 
-**CSV** uses `csv::Writer::from_path`. Score is an empty string in non-fuzzy modes.
+**CSV** uses `csv::Writer::from_path`. Columns are `path`, `generator`, `model`, `loras`, `positive_prompt`, `negative_prompt`, `prompt`, and `score`. LoRAs are joined as `name: weight | name: weight`. Score is an empty string in non-fuzzy modes.
 
 I/O errors are silently discarded; a future improvement would surface them via `error_msg`.
 
 ---
 
-## 9. Threading Model
+## 10. Threading Model
 
 | Actor | Thread | Blocking operations |
 |---|---|---|
@@ -314,7 +372,7 @@ Only one search thread runs at a time — the Search button is disabled while `s
 
 ---
 
-## 10. Project Structure
+## 11. Project Structure
 
 ```text
 ips_gui/
@@ -331,23 +389,24 @@ ips_gui/
     ├── main.rs                  # App state, UI, search, export
     └── ips/                     # Embedded search library
         ├── mod.rs
-        ├── types.rs             # Config, MatchResult, PromptRecord, Generator, MatchMode
+        ├── types.rs             # Config, MatchResult, PromptRecord, PromptDetails, LoraInfo, Generator, MatchMode
         ├── discovery.rs         # walkdir-based file discovery
         ├── matcher.rs           # exact / fuzzy / regex matching
         └── extract/
             ├── mod.rs           # dispatch by file extension
+            ├── a1111.rs         # A1111/Forge text metadata parsing
             ├── png.rs           # tEXt / iTXt chunk parsing
             ├── jpeg.rs          # COM marker, APP1 XMP / EXIF
             ├── webp.rs          # RIFF chunk parsing, XMP / EXIF
             ├── exif.rs          # TIFF/EXIF UserComment decoder
-            └── comfyui.rs       # ComfyUI workflow JSON extraction
+            └── comfyui.rs       # ComfyUI workflow JSON and structured metadata extraction
 ```
 
 `src/ips/` contains the full extraction and matching pipeline. It is an internal module — not a separate crate — so `ips_gui` builds from a single `cargo build` with no sibling directory required. `ips_cli` continues to maintain its own copy and evolves independently.
 
 ---
 
-## 11. Key Design Decisions
+## 12. Key Design Decisions
 
 ### Self-contained module instead of path dependency
 
@@ -367,11 +426,15 @@ Thumbnail decoding is I/O + CPU bound and must not block the UI thread. A fixed-
 
 ### Search within results
 
-Re-filtering the existing `Vec<MatchResult>` avoids re-scanning the filesystem and re-decoding metadata — useful when narrowing a large result set by chaining queries. The implementation clones only the `Vec<PromptRecord>` values (path + prompt string), which is cheap, and runs `match_record` in parallel via `par_iter`. Thumbnails are intentionally *not* cleared in this path because the visible file set is a subset of the previous one.
+Re-filtering the existing `Vec<MatchResult>` avoids re-scanning the filesystem and re-decoding metadata — useful when narrowing a large result set by chaining queries. The implementation clones only the existing `PromptRecord` values and runs `match_record` in parallel via `par_iter`. Thumbnails are intentionally *not* cleared in this path because the visible file set is a subset of the previous one.
 
-### MatchModeOpt local enum
+### Structured metadata is best-effort
 
-`ips::types::MatchMode` does not derive `PartialEq + Clone`, which `egui::selectable_value` requires. A local `MatchModeOpt` enum is defined in `main.rs` and mapped to `MatchMode` at Config construction time, keeping the GUI decoupled from the library's internal type constraints.
+`PromptRecord.prompt` remains the canonical searchable text so existing exact/fuzzy/regex behavior stays stable. `model`, `loras`, `positive_prompt`, and `negative_prompt` are optional display/export fields populated only when the parser can infer them with confidence. This is important for JPEG/WebP files, where metadata may be truncated, missing, or saved in generator-specific formats.
+
+### Drag-and-drop stays narrow
+
+Dropping one image is a shortcut for inspecting that image's metadata. Dropping one folder only fills the Directory field. Multiple images are rejected. This avoids turning a prompt search tool into a bulk gallery browser and prevents accidental large-directory scans.
 
 ### Separate full-res cache with stale-result guard
 
@@ -383,7 +446,7 @@ Invalid regex is caught on the UI thread before spawning, producing an immediate
 
 ---
 
-## 12. CI / Release
+## 13. CI / Release
 
 `.github/workflows/build.yml` runs on every push to `main`, every PR, and every `v*` tag.
 
@@ -396,7 +459,7 @@ Tags containing `-alpha`, `-beta`, or `-rc` are automatically marked as pre-rele
 
 ---
 
-## 13. Future Work
+## 14. Future Work
 
 | Feature | Notes |
 |---|---|
@@ -405,4 +468,4 @@ Tags containing `-alpha`, `-beta`, or `-rc` are automatically marked as pre-rele
 | Persistent settings | Serialize search parameters to a JSON config file on exit |
 | Dark / light theme toggle | `ctx.set_visuals(egui::Visuals::dark())` wired to a button |
 | Export error feedback | Surface `std::io::Error` from write operations in `error_msg` |
-| Incremental search progress | `SearchMsg::Progress(n)` variants sent as batches complete |
+| Incremental search progress | Progress messages sent as batches complete |

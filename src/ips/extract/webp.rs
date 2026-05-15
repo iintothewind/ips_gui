@@ -2,7 +2,7 @@ use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 
 use crate::ips::types::{Generator, PromptRecord};
-use super::{exif, jpeg};
+use super::{a1111, exif, jpeg};
 
 const RIFF_MAGIC: &[u8; 4] = b"RIFF";
 const WEBP_MAGIC: &[u8; 4] = b"WEBP";
@@ -65,12 +65,13 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                 }
                 if let Some(prompt) = jpeg::extract_xmp_description(&chunk_data) {
                     let generator = jpeg::detect_xmp_generator(&chunk_data);
-                    results.push(PromptRecord {
-                        path: path.to_path_buf(),
-                        prompt,
+                    results.push(PromptRecord::with_details(
+                        path.to_path_buf(),
+                        prompt.clone(),
                         generator,
-                        metadata_key: "XMP",
-                    });
+                        "XMP",
+                        a1111::extract_details(&prompt),
+                    ));
                 }
             }
             b"EXIF" => {
@@ -85,12 +86,13 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                     let _ = reader.seek(SeekFrom::Current(1));
                 }
                 if let Some(prompt) = exif::extract_user_comment(&chunk_data) {
-                    results.push(PromptRecord {
-                        path: path.to_path_buf(),
-                        prompt,
-                        generator: Generator::Unknown,
-                        metadata_key: "UserComment",
-                    });
+                    results.push(PromptRecord::with_details(
+                        path.to_path_buf(),
+                        prompt.clone(),
+                        Generator::Unknown,
+                        "UserComment",
+                        a1111::extract_details(&prompt),
+                    ));
                 }
             }
             _ => {

@@ -2,7 +2,7 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 use crate::ips::types::{Generator, PromptRecord};
-use super::exif;
+use super::{a1111, exif};
 
 const SOI_MARKER: [u8; 2] = [0xFF, 0xD8];
 const MARKER_PREFIX: u8 = 0xFF;
@@ -80,12 +80,13 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
             COM_TYPE => {
                 let text = String::from_utf8_lossy(&body).trim().to_string();
                 if !text.is_empty() {
-                    results.push(PromptRecord {
-                        path: path.to_path_buf(),
-                        prompt: text,
-                        generator: Generator::A1111,
-                        metadata_key: "COM",
-                    });
+                    results.push(PromptRecord::with_details(
+                        path.to_path_buf(),
+                        text.clone(),
+                        Generator::A1111,
+                        "COM",
+                        a1111::extract_details(&text),
+                    ));
                 }
             }
             APP1_TYPE => {
@@ -93,21 +94,23 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                     let xmp_body = &body[XMP_HEADER.len()..];
                     if let Some(prompt) = extract_xmp_description(xmp_body) {
                         let generator = detect_xmp_generator(xmp_body);
-                        results.push(PromptRecord {
-                            path: path.to_path_buf(),
-                            prompt,
+                        results.push(PromptRecord::with_details(
+                            path.to_path_buf(),
+                            prompt.clone(),
                             generator,
-                            metadata_key: "XMP",
-                        });
+                            "XMP",
+                            a1111::extract_details(&prompt),
+                        ));
                     }
                 } else if body.starts_with(EXIF_HEADER) {
                     if let Some(prompt) = exif::extract_user_comment(&body) {
-                        results.push(PromptRecord {
-                            path: path.to_path_buf(),
-                            prompt,
-                            generator: Generator::Unknown,
-                            metadata_key: "UserComment",
-                        });
+                        results.push(PromptRecord::with_details(
+                            path.to_path_buf(),
+                            prompt.clone(),
+                            Generator::Unknown,
+                            "UserComment",
+                            a1111::extract_details(&prompt),
+                        ));
                     }
                 }
             }
