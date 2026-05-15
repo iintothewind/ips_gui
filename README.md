@@ -1,5 +1,9 @@
 # ips_gui — Image Prompt Search GUI
 
+<p align="center">
+  <img src="icon.svg" alt="ips_gui app icon" width="128" height="128">
+</p>
+
 A native desktop GUI for searching AI-generated image prompts embedded in PNG, JPEG, and WebP metadata. Supports Stable Diffusion (A1111/Forge), ComfyUI, NovelAI, and InvokeAI. Self-contained — no external library crate required.
 
 ## Requirements
