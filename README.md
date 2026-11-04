@@ -103,7 +103,7 @@ Displays a spinner while searching, result count and elapsed time on completion,
 | Generator | Formats and metadata |
 |---|---|
 | Stable Diffusion A1111 / Forge | PNG (`parameters` tEXt chunk), JPEG/WebP EXIF or XMP text where available. Parses `Negative prompt:`, `Model:`, and `<lora:name:weight>` tags. |
-| ComfyUI | PNG (`prompt` workflow JSON in tEXt/iTXt). Parses common checkpoint/UNET loaders, `LoraLoader`, `Power Lora Loader (rgthree)`, `KSampler`, `CFGGuider`, CLIP text encode nodes, and Qwen text prompt nodes. |
+| ComfyUI | PNG (`prompt` workflow JSON in tEXt/iTXt). Parses common checkpoint/UNET loaders, `LoraLoader`, `Power Lora Loader (rgthree)`, `KSampler`, `CFGGuider`, CLIP text encode nodes, and Qwen text prompt nodes. Conditioning output slots are tracked, so a node that encodes both prompts (`TextEncodeQwenImage21`) yields its `negative_prompt` for the negative stream. |
 | NovelAI | PNG (`Comment` JSON, `Description` chunk) |
 | InvokeAI | JPEG / WebP (XMP with `invokeai:` namespace) |
 | Generic | JPEG / WebP (XMP `dc:description`, EXIF `UserComment`) |

@@ -1,0 +1,115 @@
+{
+  "461": {
+    "class_type": "SaveImageAdvanced",
+    "inputs": {
+      "filename_prefix": "202611/20261101/output",
+      "format": "png",
+      "images": ["483", 0]
+    }
+  },
+  "470": {
+    "class_type": "LoadImage",
+    "inputs": { "image": "ls_face_079.jpg" }
+  },
+  "477": {
+    "class_type": "ResolutionMaster",
+    "inputs": {
+      "mode": "Manual",
+      "width": 832,
+      "height": 1216,
+      "auto_detect": false,
+      "rescale_mode": "manual",
+      "rescale_value": 1.5
+    }
+  },
+  "479": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "qwen_image_2.1_turbo_int8_convrot.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "480": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3vl_8b_int8_convrot.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    }
+  },
+  "481": {
+    "class_type": "VAELoader",
+    "inputs": { "vae_name": "qwen_image_2.1_vae_bf16.safetensors" }
+  },
+  "482": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": ["477", 0],
+      "height": ["477", 1],
+      "batch_size": 1
+    }
+  },
+  "483": {
+    "class_type": "VAEDecode",
+    "inputs": { "samples": ["484", 0], "vae": ["481", 0] }
+  },
+  "484": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 1045374186066875,
+      "steps": 25,
+      "cfg": 1.0,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1.0,
+      "model": ["488", 0],
+      "positive": ["487", 0],
+      "negative": ["487", 1],
+      "latent_image": ["485", 0]
+    }
+  },
+  "485": {
+    "class_type": "ComfySwitchNode",
+    "inputs": {
+      "switch": true,
+      "on_false": ["487", 2],
+      "on_true": ["482", 0]
+    }
+  },
+  "486": {
+    "class_type": "QwenImage21Cache",
+    "inputs": {
+      "device": "auto",
+      "dtype": "default",
+      "model": ["479", 0]
+    }
+  },
+  "487": {
+    "class_type": "TextEncodeQwenImage21",
+    "inputs": {
+      "prompt": "portrait of a woman in a floral dress, cinematic lighting",
+      "negative_prompt": "",
+      "resolution": 0,
+      "clip": ["488", 1],
+      "images.image_1": ["470", 0],
+      "vae": ["481", 0]
+    }
+  },
+  "488": {
+    "class_type": "Power Lora Loader (rgthree)",
+    "inputs": {
+      "lora_1": {
+        "on": false,
+        "lora": "qwen\\image_edit_f2p_qwen.safetensors",
+        "strength": 0.3
+      },
+      "lora_2": {
+        "on": true,
+        "lora": "qwen\\style_qwen21.safetensors",
+        "strength": 1
+      },
+      "model": ["486", 0],
+      "clip": ["480", 0]
+    }
+  }
+}
