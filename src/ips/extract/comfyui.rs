@@ -231,8 +231,18 @@ fn resolve_conditioning_text_inner(
     };
 
     if is_text_encode_node(class_type) {
-        if let Some(text) = extract_text_from_node(node, text_fields_for(role, negative_stream)) {
-            return Some(text);
+        let text = if negative_stream {
+            extract_text_from_node(node, NEGATIVE_TEXT_FIELDS)
+        } else {
+            // Slot 0 encodes the node's main prompt whichever sampler input it feeds; role-named
+            // fields are only a fallback for nodes without the standard prompt fields.
+            extract_text_from_node(node, PROMPT_TEXT_FIELDS).or_else(|| match role {
+                PromptRole::Positive => extract_text_from_node(node, &["positive"]),
+                PromptRole::Negative => extract_text_from_node(node, NEGATIVE_TEXT_FIELDS),
+            })
+        };
+        if text.is_some() {
+            return text;
         }
     }
 
@@ -250,13 +260,8 @@ fn resolve_conditioning_text_inner(
     None
 }
 
-fn text_fields_for(role: PromptRole, negative_stream: bool) -> &'static [&'static str] {
-    match (role, negative_stream) {
-        (PromptRole::Positive, _) => &["text_g", "text_l", "text", "prompt", "positive"],
-        (PromptRole::Negative, true) => &["neg", "negative_prompt", "negative"],
-        (PromptRole::Negative, false) => &["neg", "negative_prompt", "negative", "text", "prompt"],
-    }
-}
+const PROMPT_TEXT_FIELDS: &[&str] = &["text_g", "text_l", "text", "prompt"];
+const NEGATIVE_TEXT_FIELDS: &[&str] = &["neg", "negative_prompt", "negative"];
 
 fn input_fields_for(role: PromptRole) -> &'static [&'static str] {
     match role {
@@ -578,6 +583,28 @@ mod tests {
         let details = extract_details_from_workflow(&workflow);
         assert_eq!(details.positive_prompt.as_deref(), Some("positive text"));
         assert_eq!(details.negative_prompt.as_deref(), Some("blurry, deformed"));
+    }
+
+    #[test]
+    fn sdxl_negative_encode_reads_text_g_and_text_l() {
+        let workflow = json!({
+            "1": {
+                "class_type": "CLIPTextEncodeSDXL",
+                "inputs": { "text_g": "cat g", "text_l": "cat l" }
+            },
+            "2": {
+                "class_type": "CLIPTextEncodeSDXL",
+                "inputs": { "text_g": "blurry g", "text_l": "blurry l" }
+            },
+            "3": {
+                "class_type": "KSampler",
+                "inputs": { "positive": ["1", 0], "negative": ["2", 0] }
+            }
+        });
+
+        let details = extract_details_from_workflow(&workflow);
+        assert_eq!(details.positive_prompt.as_deref(), Some("cat g\ncat l"));
+        assert_eq!(details.negative_prompt.as_deref(), Some("blurry g\nblurry l"));
     }
 
     #[test]
