@@ -24,7 +24,9 @@ jobs:
             target: aarch64-apple-darwin
             binary: ips_gui
             asset: ips_gui-macos-aarch64
-          - os: ubuntu-latest
+          # Pinned (not ubuntu-latest): the binary requires the build host's glibc or newer;
+          # 22.04 (glibc 2.35) keeps it runnable on Ubuntu 22.04+ and similar distros.
+          - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             binary: ips_gui
             asset: ips_gui-linux-x86_64

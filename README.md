@@ -20,7 +20,7 @@ target\release\ips_gui.exe      # Windows
 
 ## Pre-built Binaries
 
-Pre-built binaries for Windows (x86-64), macOS (Apple Silicon), and Linux (x86-64) are attached to each [GitHub Release](../../releases).
+Pre-built binaries for Windows (x86-64), macOS (Apple Silicon), and Linux (x86-64) are attached to each [GitHub Release](../../releases). The Linux binary needs glibc 2.35 or later (Ubuntu 22.04+) and a desktop session (X11 or Wayland, GTK3 for file dialogs); run it with `chmod +x ips_gui-linux-x86_64 && ./ips_gui-linux-x86_64`.
 
 ## Interface
 
