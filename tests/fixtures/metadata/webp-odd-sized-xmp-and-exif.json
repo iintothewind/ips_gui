@@ -1,0 +1,38 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "odd-sized XMP and EXIF chunks with padding bytes"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "XMP ",
+   "text": "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"><rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"><rdf:Description xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">a paper lantern, warm light</rdf:li></rdf:Alt></dc:description></rdf:Description></rdf:RDF></x:xmpmeta>  "
+  },
+  {
+   "chunk": "EXIF",
+   "exif_header": false,
+   "user_comment": {
+    "byte_order": "II",
+    "ifd": "exif",
+    "charset": "ASCII",
+    "text": "a glass jar of fireflies\nSteps: 9, Model: zit_v1 "
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "XMP",
+   "generator": "unknown",
+   "prompt": "a paper lantern, warm light",
+   "positive_prompt": "a paper lantern, warm light"
+  },
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a glass jar of fireflies\nSteps: 9, Model: zit_v1",
+   "model": "zit_v1",
+   "positive_prompt": "a glass jar of fireflies"
+  }
+ ]
+}

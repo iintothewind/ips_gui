@@ -1,0 +1,1205 @@
+{
+ "origin": "content/comfy/202512/20251219/20251219212002_00001_.png",
+ "covers": [
+  "enc-field:prompt",
+  "enc:TextEncodeQwenImageEditPlus",
+  "family:qwen",
+  "model:CheckpointLoaderSimple",
+  "node:KSampler*",
+  "png:tEXt:prompt",
+  "png:tEXt:workflow",
+  "prompt:api-format",
+  "ref:negative",
+  "ref:positive",
+  "ui-widget:CheckpointLoaderSimple",
+  "ui-widget:LoraLoader",
+  "workflow:ui-format"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "PLTE",
+   "hex": "020302c6cfd4abb1b2bec8cbb0b7b9060706acb3b4afb6b8aeb4b6adb4b5c3ccd0c0cacea9b0b1a8aeafc7d1d6b3babed2dbe5d0d9e3c4ced2bcc6c9b1b9bbd4dde7d8e1ebc9d2d7a7897d0b0c0cb4bcc0cfd8e2dae3eddce4eea6acadcdd6e0cad4d7ccd5df312014cbd4d9372418b9c2c6d6dee8d7cac2bac4c7d6e0e9abb2b4ab8d82a4a9a9d3c8bfdee6f0a9b1b8cad3dd2a1c14abb3bbc7cfdac9d1db0e1213b6bec4c3cbd43a271c9fa6a8bca398a2867ae0e8f2c1c8d1e2ebf4a6816ec4cdd8b39b8fa78374bfaaa09ba1a2ccc0b8cabeb4dcd1c9896e61d0c4bbd7cdc5ad8c7abfa69b8361568c6f5ac4ada3b99f93c6b9af90745fbbc2c9e5edf78d7063aa877787645924180f957963ab9287bdc5cdbaa89daf978ba5adb485604edfd4cb826e62b8c1c4c4b6ab825c4a876a5ddbcec5865f40a27d6a7d584bcebab08963518d685ccdd5dbbcc4d3a07865ad917e1c130c969c9ec9b1a7bfafa5987d68afb6becbb5abc3b2a715181a917567876855d3c1b87a7e7eb39f94d1beb4878b8b9c725ee4dad1c0c8d7e2d7ce402d23b6bec09297998c6653b99b8e747777b19684c6bbb3988377ddd4d28c796cb8c0ce5c60622c2723e7ded57f8486b6a3987b5d52b69987997366825d52d7c6bde9f1f9936e619b816e936e5c785448a2aaafb4bcc98b6443d9cfce55595a3533301e1f1fb19083282c2f3e3e3da1a4a1a17f739c9e9b4f5151a48d82906a566f6f6a8a91944748479294919b796ef0ece7c0b3ab6e55498673687e695de8e1daece6e24d3d32ad8671202529a186716a707463686c7d573e4a33286d4c42b5927dc5a79d776459825c3eb0b8c4916948725c51666762bbaca364463c714b38a88c77eef6fa927c6f5a3e34caaba3c09f92986b5778543a794d3fb99388988d846a4433615147d3d7db623f2fb68b72e1dbd999a1abcfd3d155493f8a837d2d3439c3c6c9a0998f41352ed7dce1ccc3c0c0bfbfdadfcecfcac8645c53bbb7b658362ab3877c915d4bb3aeace1e4e7d8dcc0ada5a1874f40ae7867ced2b3abb09b86272da6333db44852bec2a3551f1c"
+  },
+  {
+   "chunk": "pHYs",
+   "hex": "00000b1300000b1301"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "workflow",
+   "json": {
+    "id": "b058853e-412f-4f02-95e2-abe2a40ebc2e",
+    "revision": 0,
+    "last_node_id": 23,
+    "last_link_id": 71,
+    "nodes": [
+     {
+      "id": 9,
+      "type": "EmptyLatentImage",
+      "pos": [
+       -732.5341025920959,
+       368.3660675043874
+      ],
+      "size": [
+       270,
+       106
+      ],
+      "flags": {
+       "collapsed": true
+      },
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "width",
+        "type": "INT",
+        "widget": {
+         "name": "width"
+        },
+        "link": 19
+       },
+       {
+        "name": "height",
+        "type": "INT",
+        "widget": {
+         "name": "height"
+        },
+        "link": 20
+       }
+      ],
+      "outputs": [
+       {
+        "name": "LATENT",
+        "type": "LATENT",
+        "links": [
+         13
+        ]
+       }
+      ],
+      "title": "Final Image Size",
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "EmptyLatentImage",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       768,
+       768,
+       1
+      ]
+     },
+     {
+      "id": 5,
+      "type": "VAEDecode",
+      "pos": [
+       591.4222877365397,
+       -753.2133051881368
+      ],
+      "size": [
+       140,
+       46
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "samples",
+        "type": "LATENT",
+        "link": 5
+       },
+       {
+        "name": "vae",
+        "type": "VAE",
+        "link": 6
+       }
+      ],
+      "outputs": [
+       {
+        "name": "IMAGE",
+        "type": "IMAGE",
+        "links": [
+         23
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "VAEDecode",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": []
+     },
+     {
+      "id": 15,
+      "type": "LoraLoader",
+      "pos": [
+       -304.5590208867444,
+       -651.5105382815028
+      ],
+      "size": [
+       270,
+       126
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 4,
+      "inputs": [
+       {
+        "name": "model",
+        "type": "MODEL",
+        "link": 69
+       },
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 68
+       }
+      ],
+      "outputs": [
+       {
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         44
+        ]
+       },
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         64,
+         65
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "LoraLoader",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "input_ue_unconnectable": {},
+        "version": "7.4.1"
+       }
+      },
+      "widgets_values": [
+       "qwe\\qwen_image_edit_inpainting.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 23,
+      "type": "LoraLoader",
+      "pos": [
+       -674.9128859580987,
+       -653.0502356441649
+      ],
+      "size": [
+       270,
+       126
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 4,
+      "inputs": [
+       {
+        "name": "model",
+        "type": "MODEL",
+        "link": 67
+       },
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 66
+       }
+      ],
+      "outputs": [
+       {
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         69
+        ]
+       },
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         68
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "LoraLoader",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "input_ue_unconnectable": {},
+        "version": "7.4.1"
+       }
+      },
+      "widgets_values": [
+       "qwe\\qwen_multiple_angles.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 11,
+      "type": "SaveImage",
+      "pos": [
+       153.02957832048565,
+       -397.9887923439212
+      ],
+      "size": [
+       458.034492387418,
+       544.2050617866195
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "images",
+        "type": "IMAGE",
+        "link": 23
+       }
+      ],
+      "outputs": [],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "SaveImage",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "input_ue_unconnectable": {},
+        "version": "7.4.1"
+       }
+      },
+      "widgets_values": [
+       "%date:yyyyMMdd%/%date:yyyyMMddhhmmss%"
+      ]
+     },
+     {
+      "id": 7,
+      "type": "LoadImage",
+      "pos": [
+       -758.2779517954012,
+       -383.33908020919114
+      ],
+      "size": [
+       274.080078125,
+       314.0000305175781
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+       {
+        "name": "IMAGE",
+        "type": "IMAGE",
+        "links": [
+         17,
+         70
+        ]
+       },
+       {
+        "name": "MASK",
+        "type": "MASK",
+        "links": null
+       }
+      ],
+      "title": "base-image",
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "LoadImage",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "Mayuki-Ito.jpg",
+       "image"
+      ]
+     },
+     {
+      "id": 10,
+      "type": "ResolutionMaster",
+      "pos": [
+       -1163.2103858868777,
+       -264.48577369596563
+      ],
+      "size": [
+       356.8319156705543,
+       680
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "input_image",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       }
+      ],
+      "outputs": [
+       {
+        "name": "",
+        "type": "INT",
+        "links": [
+         19
+        ]
+       },
+       {
+        "name": "",
+        "type": "INT",
+        "links": [
+         20
+        ]
+       },
+       {
+        "name": "",
+        "type": "FLOAT",
+        "links": null
+       },
+       {
+        "name": "",
+        "type": "INT",
+        "links": null
+       },
+       {
+        "name": "",
+        "type": "LATENT",
+        "links": null
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfyui-resolution-master",
+       "ver": "1.4.7",
+       "Node name for S&R": "ResolutionMaster",
+       "mode": "Manual",
+       "valueX": 836,
+       "valueY": 1254,
+       "canvas_min_x": 0,
+       "canvas_max_x": 2048,
+       "canvas_step_x": 64,
+       "canvas_min_y": 0,
+       "canvas_max_y": 2048,
+       "canvas_step_y": 64,
+       "canvas_decimals_x": 0,
+       "canvas_decimals_y": 0,
+       "canvas_snap": true,
+       "canvas_dots": true,
+       "canvas_frame": true,
+       "action_slider_snap_min": 16,
+       "action_slider_snap_max": 256,
+       "action_slider_snap_step": 16,
+       "scaling_slider_min": 0.1,
+       "scaling_slider_max": 4,
+       "scaling_slider_step": 0.1,
+       "megapixels_slider_min": 0.5,
+       "megapixels_slider_max": 6,
+       "megapixels_slider_step": 0.1,
+       "snapValue": 16,
+       "upscaleValue": 1,
+       "targetResolution": 1080,
+       "targetMegapixels": 2,
+       "rescaleMode": "resolution",
+       "rescaleValue": 1.4064055939424946,
+       "autoDetect": false,
+       "autoFitOnChange": false,
+       "autoResizeOnChange": false,
+       "selectedCategory": "SDXL",
+       "selectedPreset": "3:2 Landscape",
+       "useCustomCalc": false,
+       "manual_slider_min_w": 64,
+       "manual_slider_max_w": 2048,
+       "manual_slider_step_w": 64,
+       "manual_slider_min_h": 64,
+       "manual_slider_max_h": 2048,
+       "manual_slider_step_h": 64,
+       "section_actions_collapsed": false,
+       "section_scaling_collapsed": false,
+       "section_autoDetect_collapsed": false,
+       "section_presets_collapsed": false,
+       "dropdown_resolution_expanded": false,
+       "dropdown_category_expanded": false,
+       "dropdown_preset_expanded": false,
+       "preset_selector_mode": "visual",
+       "batch_size": 1,
+       "customPresetsJSON": "",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "mode": true,
+         "width": true,
+         "height": true,
+         "auto_detect": true,
+         "rescale_mode": true,
+         "rescale_value": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "Manual",
+       836,
+       1254,
+       false,
+       "resolution",
+       1.4064055939424946
+      ]
+     },
+     {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+       -1168.1951170901957,
+       -435.5757323329139
+      ],
+      "size": [
+       369.6529235839844,
+       100.6932373046875
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+       {
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         67
+        ]
+       },
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         66
+        ]
+       },
+       {
+        "name": "VAE",
+        "type": "VAE",
+        "links": [
+         6,
+         8,
+         9
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "CheckpointLoaderSimple",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "qwen_edit_aio_v53.safetensors"
+      ]
+     },
+     {
+      "id": 4,
+      "type": "TextEncodeQwenImageEditPlus",
+      "pos": [
+       -415.2087620566755,
+       105.72918245092261
+      ],
+      "size": [
+       506.53914099594635,
+       188
+      ],
+      "flags": {
+       "collapsed": true
+      },
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 65
+       },
+       {
+        "name": "vae",
+        "shape": 7,
+        "type": "VAE",
+        "link": 9
+       },
+       {
+        "name": "image1",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": 70
+       },
+       {
+        "name": "image2",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": 71
+       },
+       {
+        "name": "image3",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       },
+       {
+        "name": "image4",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CONDITIONING",
+        "type": "CONDITIONING",
+        "links": [
+         4
+        ]
+       }
+      ],
+      "title": "TextEncodeQwenImageEditPlus Negative (leave blank)",
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "TextEncodeQwenImageEditPlus",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       ""
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+     },
+     {
+      "id": 8,
+      "type": "LoadImage",
+      "pos": [
+       -757.2694079010126,
+       -5.981801232300963
+      ],
+      "size": [
+       273.40402699969934,
+       314
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+       {
+        "name": "IMAGE",
+        "type": "IMAGE",
+        "links": [
+         18,
+         71
+        ]
+       },
+       {
+        "name": "MASK",
+        "type": "MASK",
+        "links": null
+       }
+      ],
+      "title": "ref-image",
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "LoadImage",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "11118_76.jpg",
+       "image"
+      ]
+     },
+     {
+      "id": 2,
+      "type": "KSampler",
+      "pos": [
+       171.56432734221133,
+       -753.992977645959
+      ],
+      "size": [
+       318.35205831952203,
+       274.48308008776826
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "model",
+        "type": "MODEL",
+        "link": 44
+       },
+       {
+        "name": "positive",
+        "type": "CONDITIONING",
+        "link": 3
+       },
+       {
+        "name": "negative",
+        "type": "CONDITIONING",
+        "link": 4
+       },
+       {
+        "name": "latent_image",
+        "type": "LATENT",
+        "link": 13
+       }
+      ],
+      "outputs": [
+       {
+        "name": "LATENT",
+        "type": "LATENT",
+        "links": [
+         5
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "KSampler",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       583576560039455,
+       "randomize",
+       4,
+       1,
+       "lcm",
+       "beta",
+       1
+      ]
+     },
+     {
+      "id": 3,
+      "type": "TextEncodeQwenImageEditPlus",
+      "pos": [
+       -426.85700004306034,
+       -335.845108499059
+      ],
+      "size": [
+       519.6552586242826,
+       388.76532436193094
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 64
+       },
+       {
+        "name": "vae",
+        "shape": 7,
+        "type": "VAE",
+        "link": 8
+       },
+       {
+        "name": "image1",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": 17
+       },
+       {
+        "name": "image2",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": 18
+       },
+       {
+        "name": "image3",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       },
+       {
+        "name": "image4",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CONDITIONING",
+        "type": "CONDITIONING",
+        "links": [
+         3
+        ]
+       }
+      ],
+      "title": "TextEncodeQwenImageEditPlus Input Prompt",
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.67",
+       "Node name for S&R": "TextEncodeQwenImageEditPlus",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "Use base-image as the main image.\nUse ref-image as the reference.\nReplace the girl's face and hairstyle in base-image with the girl's face and hairstyle from ref-image.\nKeep all other parts unchanged.\nProfessional digital photography."
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+     }
+    ],
+    "links": [
+     [
+      3,
+      3,
+      0,
+      2,
+      1,
+      "CONDITIONING"
+     ],
+     [
+      4,
+      4,
+      0,
+      2,
+      2,
+      "CONDITIONING"
+     ],
+     [
+      5,
+      2,
+      0,
+      5,
+      0,
+      "LATENT"
+     ],
+     [
+      6,
+      1,
+      2,
+      5,
+      1,
+      "VAE"
+     ],
+     [
+      8,
+      1,
+      2,
+      3,
+      1,
+      "VAE"
+     ],
+     [
+      9,
+      1,
+      2,
+      4,
+      1,
+      "VAE"
+     ],
+     [
+      13,
+      9,
+      0,
+      2,
+      3,
+      "LATENT"
+     ],
+     [
+      17,
+      7,
+      0,
+      3,
+      2,
+      "IMAGE"
+     ],
+     [
+      18,
+      8,
+      0,
+      3,
+      3,
+      "IMAGE"
+     ],
+     [
+      19,
+      10,
+      0,
+      9,
+      0,
+      "INT"
+     ],
+     [
+      20,
+      10,
+      1,
+      9,
+      1,
+      "INT"
+     ],
+     [
+      23,
+      5,
+      0,
+      11,
+      0,
+      "IMAGE"
+     ],
+     [
+      44,
+      15,
+      0,
+      2,
+      0,
+      "MODEL"
+     ],
+     [
+      64,
+      15,
+      1,
+      3,
+      0,
+      "CLIP"
+     ],
+     [
+      65,
+      15,
+      1,
+      4,
+      0,
+      "CLIP"
+     ],
+     [
+      66,
+      1,
+      1,
+      23,
+      1,
+      "CLIP"
+     ],
+     [
+      67,
+      1,
+      0,
+      23,
+      0,
+      "MODEL"
+     ],
+     [
+      68,
+      23,
+      1,
+      15,
+      1,
+      "CLIP"
+     ],
+     [
+      69,
+      23,
+      0,
+      15,
+      0,
+      "MODEL"
+     ],
+     [
+      70,
+      7,
+      0,
+      4,
+      2,
+      "IMAGE"
+     ],
+     [
+      71,
+      8,
+      0,
+      4,
+      3,
+      "IMAGE"
+     ]
+    ],
+    "groups": [
+     {
+      "id": 1,
+      "title": "Prompts",
+      "bounding": [
+       -443.382020597108,
+       -423.20515744735604,
+       565.2202340053559,
+       573.846877740008
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+     }
+    ],
+    "config": {},
+    "extra": {
+     "ds": {
+      "scale": 1.1478867322845514,
+      "offset": [
+       1031.5453542349096,
+       1031.8524476416367
+      ]
+     },
+     "ue_links": [],
+     "frontendVersion": "1.34.9",
+     "VHS_latentpreview": false,
+     "VHS_latentpreviewrate": 0,
+     "VHS_MetadataImage": true,
+     "VHS_KeepIntermediate": true,
+     "links_added_by_ue": [],
+     "workflowRendererVersion": "LG"
+    },
+    "version": 0.4
+   }
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "ckpt_name": "qwen_edit_aio_v53.safetensors"
+     },
+     "class_type": "CheckpointLoaderSimple",
+     "_meta": {
+      "title": "Load Checkpoint"
+     }
+    },
+    "2": {
+     "inputs": {
+      "seed": 583576560039455,
+      "steps": 4,
+      "cfg": 1.0,
+      "sampler_name": "lcm",
+      "scheduler": "beta",
+      "denoise": 1.0,
+      "model": [
+       "1",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "9",
+       0
+      ]
+     },
+     "class_type": "KSampler",
+     "_meta": {
+      "title": "KSampler"
+     }
+    },
+    "3": {
+     "inputs": {
+      "prompt": "Use base-image as the main image.\nUse ref-image as the reference.\nReplace the girl's face and hairstyle in base-image with the girl's face and hairstyle from ref-image.\nKeep all other parts unchanged.\nProfessional digital photography.",
+      "clip": [
+       "1",
+       1
+      ],
+      "vae": [
+       "1",
+       2
+      ],
+      "image1": [
+       "7",
+       0
+      ],
+      "image2": [
+       "8",
+       0
+      ]
+     },
+     "class_type": "TextEncodeQwenImageEditPlus",
+     "_meta": {
+      "title": "TextEncodeQwenImageEditPlus Input Prompt"
+     }
+    },
+    "4": {
+     "inputs": {
+      "prompt": "",
+      "clip": [
+       "1",
+       1
+      ],
+      "vae": [
+       "1",
+       2
+      ],
+      "image1": [
+       "7",
+       0
+      ],
+      "image2": [
+       "8",
+       0
+      ]
+     },
+     "class_type": "TextEncodeQwenImageEditPlus",
+     "_meta": {
+      "title": "TextEncodeQwenImageEditPlus Negative (leave blank)"
+     }
+    },
+    "5": {
+     "inputs": {
+      "samples": [
+       "2",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     },
+     "class_type": "VAEDecode",
+     "_meta": {
+      "title": "VAE Decode"
+     }
+    },
+    "7": {
+     "inputs": {
+      "image": "Mayuki-Ito.jpg"
+     },
+     "class_type": "LoadImage",
+     "_meta": {
+      "title": "base-image"
+     },
+     "is_changed": [
+      "e20600922f7352846a047565b32c1584a03d40dd11d5940505bd849d29beb62a"
+     ]
+    },
+    "8": {
+     "inputs": {
+      "image": "11118_76.jpg"
+     },
+     "class_type": "LoadImage",
+     "_meta": {
+      "title": "ref-image"
+     },
+     "is_changed": [
+      "dc6ca63418a88f8fc5f79ebc41a753382577ab3eacfb0baf910a2db56ade2be5"
+     ]
+    },
+    "9": {
+     "inputs": {
+      "width": [
+       "10",
+       0
+      ],
+      "height": [
+       "10",
+       1
+      ],
+      "batch_size": 1
+     },
+     "class_type": "EmptyLatentImage",
+     "_meta": {
+      "title": "Final Image Size"
+     }
+    },
+    "10": {
+     "inputs": {
+      "mode": "Manual",
+      "width": 836,
+      "height": 1254,
+      "auto_detect": false,
+      "rescale_mode": "resolution",
+      "rescale_value": 1.4064055939424946
+     },
+     "class_type": "ResolutionMaster",
+     "_meta": {
+      "title": "Resolution Master"
+     }
+    },
+    "11": {
+     "inputs": {
+      "filename_prefix": "20251219/20251219212002",
+      "images": [
+       "5",
+       0
+      ]
+     },
+     "class_type": "SaveImage",
+     "_meta": {
+      "title": "Save Image"
+     }
+    }
+   }
+  },
+  {
+   "chunk": "eXIf",
+   "hex": "49492a000800000006001201030001000000010000001a01050001000000560000001b010500010000005e0000002801030001000000020000001302030001000000010000006987040001000000660000000000000048000000010000004800000001000000060000900700040000003032313001910700040000000102030000a00700040000003031303001a0030001000000ffff000002a00400010000004003000003a0040001000000e004000000000000"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "workflow",
+   "generator": "comfyui",
+   "prompt": "Use base-image as the main image.\nUse ref-image as the reference.\nReplace the girl's face and hairstyle in base-image with the girl's face and hairstyle from ref-image.\nKeep all other parts unchanged.\nProfessional digital photography.",
+   "model": "qwen_edit_aio_v53.safetensors",
+   "positive_prompt": "Use base-image as the main image.\nUse ref-image as the reference.\nReplace the girl's face and hairstyle in base-image with the girl's face and hairstyle from ref-image.\nKeep all other parts unchanged.\nProfessional digital photography."
+  },
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "Use base-image as the main image.\nUse ref-image as the reference.\nReplace the girl's face and hairstyle in base-image with the girl's face and hairstyle from ref-image.\nKeep all other parts unchanged.\nProfessional digital photography.",
+   "model": "qwen_edit_aio_v53.safetensors",
+   "positive_prompt": "Use base-image as the main image.\nUse ref-image as the reference.\nReplace the girl's face and hairstyle in base-image with the girl's face and hairstyle from ref-image.\nKeep all other parts unchanged.\nProfessional digital photography."
+  }
+ ]
+}

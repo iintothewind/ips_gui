@@ -1,0 +1,69 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "JSON object in JPEG COM → comfyui"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "COM",
+   "json": {
+    "4": {
+     "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+     },
+     "class_type": "CheckpointLoaderSimple"
+    },
+    "6": {
+     "inputs": {
+      "text": "a lantern festival over a river",
+      "clip": [
+       "4",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode"
+    },
+    "7": {
+     "inputs": {
+      "text": "blurry",
+      "clip": [
+       "4",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode"
+    },
+    "3": {
+     "inputs": {
+      "seed": 1,
+      "steps": 20,
+      "model": [
+       "4",
+       0
+      ],
+      "positive": [
+       "6",
+       0
+      ],
+      "negative": [
+       "7",
+       0
+      ]
+     },
+     "class_type": "KSampler"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "COM",
+   "generator": "comfyui",
+   "prompt": "a lantern festival over a river | blurry",
+   "model": "sd_xl_base_1.0.safetensors",
+   "positive_prompt": "a lantern festival over a river",
+   "negative_prompt": "blurry"
+  }
+ ]
+}

@@ -1,0 +1,45 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "iTXt (plain)",
+  "Description → novelai",
+  "Comment JSON → novelai"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "iTXt",
+   "keyword": "Description",
+   "compressed": false,
+   "text": "a red fox in fresh snow"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "Software",
+   "text": "NovelAI"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "Comment",
+   "json": {
+    "prompt": "a red fox in fresh snow, winter forest",
+    "uc": "lowres",
+    "steps": 28
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "Description",
+   "generator": "novelai",
+   "prompt": "a red fox in fresh snow",
+   "positive_prompt": "a red fox in fresh snow"
+  },
+  {
+   "metadata_key": "Comment",
+   "generator": "novelai",
+   "prompt": "a red fox in fresh snow, winter forest",
+   "positive_prompt": "a red fox in fresh snow, winter forest"
+  }
+ ]
+}

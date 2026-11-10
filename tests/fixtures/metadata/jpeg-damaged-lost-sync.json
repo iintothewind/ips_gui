@@ -1,0 +1,31 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "segment that does not start with 0xFF"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "COM",
+   "text": "a harbor at dusk"
+  },
+  {
+   "segment": "COM",
+   "text": "second comment that gets cut"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "COM",
+   "generator": "a1111",
+   "prompt": "a harbor at dusk",
+   "positive_prompt": "a harbor at dusk"
+  }
+ ],
+ "patch": [
+  {
+   "offset": 22,
+   "hex": "00"
+  }
+ ]
+}

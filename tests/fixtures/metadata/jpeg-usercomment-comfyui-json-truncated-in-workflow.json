@@ -1,0 +1,29 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "JSON cut off inside \"workflow\" (64 KB JPEG segment limit)",
+  "\"prompt\" before the cut is complete"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "II",
+    "ifd": "ifd0",
+    "charset": "none",
+    "text": "{\"prompt\": {\"4\": {\"inputs\": {\"ckpt_name\": \"sd_xl_base_1.0.safetensors\"}, \"class_type\": \"CheckpointLoaderSimple\"}, \"6\": {\"inputs\": {\"text\": \"a lantern festival over a river\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"7\": {\"inputs\": {\"text\": \"blurry\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"3\": {\"inputs\": {\"seed\": 1, \"steps\": 20, \"model\": [\"4\", 0], \"positive\": [\"6\", 0], \"negative\": [\"7\", 0]}, \"class_type\": \"KSampler\"}}, \"workflow\": {\"nodes\": [{\"id\": 4, \"type\": \"CheckpointLoaderSimple\", \"mode\": 0, \"widgets_values\": [\"sd_xl_base_1.0.safetensors\"]}, {\"id\": 6, \"type\": \"CLIPTextEncode\", \"mode\": 0, \"inputs\": [{\"name\": \"clip\", \"link\": 1}], \"widgets_values\": [\"a lantern festival over a river\"]}, {\"id\": 7, \"type\": \"CLIPTextEncode\", \"mode\": 0, \"inputs\": [{\"name\": \"clip\", \"link\": 2}], \"widgets_values\": [\"blurry\"]}, {\"id\": 3, \"type\": \"KSampler\", \"mode\": 0, \"inputs\": [{\"name\": \"model\", \"link\": 3}, {\"name\": \"positive\", \"link\": 4}, {\"name\": \"negative\", \"link\": 5}], \"widgets_values\": [1, \"fixed\", 20, 7, \"euler\", \"normal\", 1]}], \"links\": [[1"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "comfyui",
+   "prompt": "a lantern festival over a river | blurry",
+   "model": "sd_xl_base_1.0.safetensors",
+   "positive_prompt": "a lantern festival over a river",
+   "negative_prompt": "blurry"
+  }
+ ]
+}

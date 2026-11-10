@@ -1,0 +1,29 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "UserComment ASCII charset code",
+  "big-endian TIFF"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "ASCII",
+    "text": "a red bicycle against a yellow wall\nNegative prompt: text\nSteps: 30, Model: juggernaut_xl"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a red bicycle against a yellow wall\nNegative prompt: text\nSteps: 30, Model: juggernaut_xl",
+   "model": "juggernaut_xl",
+   "positive_prompt": "a red bicycle against a yellow wall",
+   "negative_prompt": "text"
+  }
+ ]
+}

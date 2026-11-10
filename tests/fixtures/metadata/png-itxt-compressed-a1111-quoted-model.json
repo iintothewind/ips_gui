@@ -1,0 +1,35 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "iTXt (zlib)",
+  "a1:negative",
+  "a1:model-quoted",
+  "a1:model-hash",
+  "a1:lora-tag"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "iTXt",
+   "keyword": "parameters",
+   "compressed": true,
+   "text": "a lighthouse on a rocky coast at dawn, <lora:film_grain:0.6>\nNegative prompt: blurry, lowres\nSteps: 20, Sampler: Euler a, CFG scale: 7, Seed: 1, Model hash: 0123abcd, Model: \"dream shaper, v8\", Version: v1.10"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "parameters",
+   "generator": "a1111",
+   "prompt": "a lighthouse on a rocky coast at dawn, <lora:film_grain:0.6>\nNegative prompt: blurry, lowres\nSteps: 20, Sampler: Euler a, CFG scale: 7, Seed: 1, Model hash: 0123abcd, Model: \"dream shaper, v8\", Version: v1.10",
+   "model": "dream shaper, v8",
+   "loras": [
+    {
+     "name": "film_grain",
+     "weight": "0.6"
+    }
+   ],
+   "positive_prompt": "a lighthouse on a rocky coast at dawn, <lora:film_grain:0.6>",
+   "negative_prompt": "blurry, lowres"
+  }
+ ]
+}

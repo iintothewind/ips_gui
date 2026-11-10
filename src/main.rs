@@ -1,9 +1,7 @@
 #![windows_subsystem = "windows"]
 
-mod ips;
-
 use eframe::egui;
-use ips::{
+use ips_gui::ips::{
     discovery::{discover_files, is_image},
     extract::extract_prompt,
     matcher::match_record,
@@ -381,7 +379,7 @@ impl IpsGuiApp {
             generator: String,
             prompt: &'a str,
             model: Option<&'a str>,
-            loras: &'a [crate::ips::types::LoraInfo],
+            loras: &'a [ips_gui::ips::types::LoraInfo],
             positive_prompt: Option<&'a str>,
             negative_prompt: Option<&'a str>,
             #[serde(skip_serializing_if = "Option::is_none")]

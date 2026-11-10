@@ -1,0 +1,28 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "UNICODE little-endian text inside big-endian TIFF: order guessed from zero bytes"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "le",
+    "text": "a teapot on a windowsill\nSteps: 6, Model: pixart_sigma"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a teapot on a windowsill\nSteps: 6, Model: pixart_sigma",
+   "model": "pixart_sigma",
+   "positive_prompt": "a teapot on a windowsill"
+  }
+ ]
+}

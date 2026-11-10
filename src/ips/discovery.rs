@@ -33,7 +33,7 @@ pub fn discover_files(config: &Config) -> Vec<PathBuf> {
         .collect()
 }
 
-pub(crate) fn is_image(path: &std::path::Path) -> bool {
+pub fn is_image(path: &std::path::Path) -> bool {
     path.extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| IMAGE_EXTENSIONS.contains(&ext.to_lowercase().as_str()))

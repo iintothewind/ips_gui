@@ -1,0 +1,83 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "BasicGuider conditioning",
+  "ConditioningCombine conditioning_1/_2",
+  "CLIPTextEncodeSDXL text_g/text_l",
+  "custom loader unet_name fallback"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "unet_name": "krea2_turbo_svdq.safetensors"
+     },
+     "class_type": "NunchakuFluxDiTLoader"
+    },
+    "2": {
+     "inputs": {
+      "text_g": "an old stone bridge over a river",
+      "text_l": "stone bridge, river",
+      "width": 1024,
+      "height": 1024
+     },
+     "class_type": "CLIPTextEncodeSDXL"
+    },
+    "3": {
+     "inputs": {
+      "text": "autumn leaves"
+     },
+     "class_type": "CLIPTextEncode"
+    },
+    "4": {
+     "inputs": {
+      "conditioning_1": [
+       "2",
+       0
+      ],
+      "conditioning_2": [
+       "3",
+       0
+      ]
+     },
+     "class_type": "ConditioningCombine"
+    },
+    "5": {
+     "inputs": {
+      "model": [
+       "1",
+       0
+      ],
+      "conditioning": [
+       "4",
+       0
+      ]
+     },
+     "class_type": "BasicGuider"
+    },
+    "6": {
+     "inputs": {
+      "guider": [
+       "5",
+       0
+      ]
+     },
+     "class_type": "SamplerCustomAdvanced"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "an old stone bridge over a river | stone bridge, river | autumn leaves",
+   "model": "krea2_turbo_svdq.safetensors",
+   "positive_prompt": "an old stone bridge over a river\nstone bridge, river"
+  }
+ ]
+}

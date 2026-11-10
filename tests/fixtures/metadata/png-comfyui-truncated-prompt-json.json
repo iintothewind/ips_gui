@@ -1,0 +1,23 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "truncated JSON recovered up to the cut (PNG)",
+  "escaped characters before the cut"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "text": "{\"4\": {\"inputs\": {\"ckpt_name\": \"sd_xl_base_1.0.safetensors\"}, \"class_type\": \"CheckpointLoaderSimple\"}, \"6\": {\"inputs\": {\"text\": \"a lantern festival over a \\\"river\\\"\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"7\": {\"inputs\": {\"text\": \"blu"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a lantern festival over a \"river\"",
+   "model": "sd_xl_base_1.0.safetensors"
+  }
+ ]
+}

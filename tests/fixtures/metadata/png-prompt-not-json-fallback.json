@@ -1,0 +1,23 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "prompt keyword with non-JSON text → unknown + A1111 details"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "text": "a quiet library\nSteps: 20, Model: sd15_base"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "unknown",
+   "prompt": "a quiet library\nSteps: 20, Model: sd15_base",
+   "model": "sd15_base",
+   "positive_prompt": "a quiet library"
+  }
+ ]
+}

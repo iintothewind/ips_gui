@@ -1,0 +1,28 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "EOI marker ends the metadata scan"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "COM",
+   "text": "first comment"
+  },
+  {
+   "marker": "D9"
+  },
+  {
+   "segment": "COM",
+   "text": "after end of image"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "COM",
+   "generator": "a1111",
+   "prompt": "first comment",
+   "positive_prompt": "first comment"
+  }
+ ]
+}

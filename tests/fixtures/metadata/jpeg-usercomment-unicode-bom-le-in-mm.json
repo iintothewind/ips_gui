@@ -1,0 +1,28 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "UNICODE with little-endian BOM inside big-endian TIFF: BOM wins"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "bom-le",
+    "text": "a bowl of ramen, steam rising\nSteps: 12, Model: flux_schnell"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a bowl of ramen, steam rising\nSteps: 12, Model: flux_schnell",
+   "model": "flux_schnell",
+   "positive_prompt": "a bowl of ramen, steam rising"
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "UserComment with undefined (all-zero) charset code",
+  "UserComment in IFD0",
+  "EXIF chunk without \"Exif\\0\\0\" header"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": false,
+   "user_comment": {
+    "byte_order": "II",
+    "ifd": "ifd0",
+    "charset": "undefined",
+    "text": "an origami crane on a desk\nSteps: 8, Model: sdxl_turbo"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "an origami crane on a desk\nSteps: 8, Model: sdxl_turbo",
+   "model": "sdxl_turbo",
+   "positive_prompt": "an origami crane on a desk"
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "PNG shorter than its signature"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "parameters",
+   "text": "a quiet forest path"
+  }
+ ],
+ "expected": [],
+ "truncate_to": 5
+}

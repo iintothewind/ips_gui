@@ -1,0 +1,70 @@
+{
+ "origin": "content/comfy/202512/20251228/20251228201208.jpg",
+ "covers": [
+  "a1:lora-tag",
+  "a1:model",
+  "a1:model-hash",
+  "a1:negative",
+  "a1:steps",
+  "family:flux",
+  "family:z-image-turbo",
+  "jpeg-exif:UNICODE:MM"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "be",
+    "text": "a highly detailed image of a woman with long hair wearing a bottleneck dress standing in a cafe looking at the viewer. <lora:midjourney_luneva_cinematic_zit:0.5>\nNegative prompt: a highly detailed image of a woman with long hair wearing a bottleneck dress standing in a cafe looking at the viewer.\nSteps: 9, Sampler: DDIM_ddim_uniform, CFG scale: 1.0, Seed: 470937561919758, Clip skip: 1, Model: zit_tensor_core_fp8.safetensors, Model hash: b1b285861c, VAE: flux_vae.safetensors, VAE hash: afc8e28272, Lora hashes: \"midjourney_luneva_cinematic_zit: 18401392af\", Hashes: {\"model\": \"b1b285861c\", \"vae\": \"afc8e28272\", \"lora:midjourney_luneva_cinematic_zit\": \"18401392af\"}"
+   }
+  },
+  {
+   "marker": "DB",
+   "hex": "0001010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+  },
+  {
+   "marker": "DB",
+   "hex": "0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
+  },
+  {
+   "marker": "C0",
+   "hex": "0804e0034003012200021101031101"
+  },
+  {
+   "marker": "C4",
+   "hex": "0000020203010101010000000000000000030402050106070800090a"
+  },
+  {
+   "marker": "C4",
+   "hex": "1000030100020202020104010302020017010203040511121306140021220715233132082441334251162561093452711743628191263518194472a153638283c1"
+  },
+  {
+   "marker": "C4",
+   "hex": "0100030003010101000000000000000000000102030405060708"
+  },
+  {
+   "marker": "C4",
+   "hex": "110002010302040404060104020004010d011121023141005103126171048191f022a1b1c1051332d1e1f14206142352627233438292a20715243463c2d244537383b2e2"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a highly detailed image of a woman with long hair wearing a bottleneck dress standing in a cafe looking at the viewer. <lora:midjourney_luneva_cinematic_zit:0.5>\nNegative prompt: a highly detailed image of a woman with long hair wearing a bottleneck dress standing in a cafe looking at the viewer.\nSteps: 9, Sampler: DDIM_ddim_uniform, CFG scale: 1.0, Seed: 470937561919758, Clip skip: 1, Model: zit_tensor_core_fp8.safetensors, Model hash: b1b285861c, VAE: flux_vae.safetensors, VAE hash: afc8e28272, Lora hashes: \"midjourney_luneva_cinematic_zit: 18401392af\", Hashes: {\"model\": \"b1b285861c\", \"vae\": \"afc8e28272\", \"lora:midjourney_luneva_cinematic_zit\": \"18401392af\"}",
+   "model": "zit_tensor_core_fp8.safetensors",
+   "loras": [
+    {
+     "name": "midjourney_luneva_cinematic_zit",
+     "weight": "0.5"
+    }
+   ],
+   "positive_prompt": "a highly detailed image of a woman with long hair wearing a bottleneck dress standing in a cafe looking at the viewer. <lora:midjourney_luneva_cinematic_zit:0.5>",
+   "negative_prompt": "a highly detailed image of a woman with long hair wearing a bottleneck dress standing in a cafe looking at the viewer."
+  }
+ ]
+}

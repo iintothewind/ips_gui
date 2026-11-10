@@ -56,6 +56,7 @@ The UI thread also handles drag-and-drop events. Single-image drops are parsed s
 | JSON export | `serde` + `serde_json` v1 | Pretty-printed output |
 | CSV export | `csv` v1 | RFC 4180 compliant writer |
 | Regex validation | `regex` v1 | Pre-validates queries before thread spawn |
+| PNG `iTXt` decompression | `flate2` v1 | zlib-compressed `iTXt` values |
 
 ---
 
@@ -199,23 +200,183 @@ This keeps the application focused on prompt search instead of turning directory
 
 ## 6. Metadata Extraction Model
 
-The low-level container parsers remain intentionally tolerant:
+`extract_prompt(path, verbose)` dispatches by file extension to one of three container parsers. Each reads only the metadata headers of a local file, never the image data, and returns `0..N` `PromptRecord`s. The extraction code is kept in step with `ips_cli` v0.3.0; the metadata fixtures (`tests/fixtures/metadata/`, shared byte-for-byte with `ips_cli`) define the expected records.
 
-| Parser | Existing responsibility |
+### 6.1 Container parsers
+
+#### PNG (`png.rs`)
+
+PNG stores metadata in ancillary text chunks **before** image data. The reader validates the 8-byte signature, then loops:
+
+```
+for each chunk:
+    read length (BE u32) + type (4 bytes) + data + CRC (4 bytes, not validated)
+    if type == IDAT → stop (no metadata after image data in normal AI PNGs)
+    if type in [tEXt, iTXt]:
+        parse (keyword, value)
+        process_keyword(keyword, value)
+```
+
+Chunk data is read with `read_exact_vec`, which grows the buffer with the bytes actually received, so a bogus length field cannot force a huge allocation. A truncated chunk stops the loop and keeps the records collected so far.
+
+| Chunk | Layout | Notes |
+|---|---|---|
+| `tEXt` | `keyword\0value` | Latin-1 by spec (Pillow writes it so); valid UTF-8 is read as UTF-8 |
+| `iTXt` | `keyword\0compression_flag(1) compression_method(1) language\0 translated_keyword\0 text` | UTF-8; zlib-compressed (`compression_flag == 1`) and plain both supported. `zTXt` is not read. |
+
+| Keyword | Expected generator | Value format | Handler |
+|---|---|---|---|
+| `parameters` | A1111 / Forge | Plain A1111 parameters text | `a1111::extract_details(value)` → generator `A1111` |
+| `prompt` | ComfyUI | API prompt JSON `{ "node_id": { "class_type", "inputs" }, ... }`, or wrapped `{"prompt": …}` | See §6.3 |
+| `workflow` | ComfyUI | UI workflow JSON (`nodes` + `links`), or wrapped `{"workflow": …}` | Converted to API form, then §6.3. Muted (mode 2) and bypassed (mode 4) nodes keep their links but contribute no values. |
+| `Comment` | NovelAI | JSON with `"prompt"` field | Strict `serde_json`; `prompt` field → `a1111::extract_details` → generator `NovelAI`; no `prompt` field → no record; invalid JSON → raw text, generator `Unknown` |
+| `Description` | NovelAI (alt) | Plain text | `a1111::extract_details(value)` → generator `NovelAI` |
+| *(other)* | — | — | Silently skipped |
+
+#### JPEG (`jpeg.rs`)
+
+JPEG metadata lives in markers between SOI (`0xFFD8`) and SOS (`0xFFDA`, start of scan data).
+
+```
+loop markers:
+    if SOS → stop
+    read segment length (BE u16, includes length field itself)
+    match marker type:
+        0xFFFE (COM)  → body as UTF-8 lossy text
+        0xFFE1 (APP1) → if XMP header → extract dc:description
+                      → if Exif\0\0 header → EXIF block (below)
+        else          → skip
+```
+
+| Segment | Generator (heuristic) | Handler |
+|---|---|---|
+| COM (`0xFFFE`) | A1111 | JSON object → ComfyUI (§6.3); else full body → `a1111::extract_details` |
+| APP1 XMP | InvokeAI if `invokeai:` in XML; else Unknown | `extract_xmp_description` → `a1111::extract_details` |
+| APP1 EXIF | Unknown | `exif::extract_user_comment` → JSON object → ComfyUI (§6.3); else `a1111::extract_details`; plus IFD0 `prompt:` / `workflow:` tags (below) |
+
+JPEG save nodes such as ComfyUI-JPG-Metadata store `json.dumps({"prompt": …, "workflow": …})` in UserComment; a graph larger than the 64 KB segment limit arrives cut off and is recovered up to the cut (§6.2). Truncated segments, `seg_len < 2`, and lost marker sync stop the loop and keep partial results.
+
+#### WebP (`webp.rs`)
+
+Walks the RIFF chunks after the `RIFF….WEBP` header. `XMP ` and `EXIF` chunks follow the same rules as JPEG APP1 XMP / EXIF; the `EXIF` chunk is accepted with or without the `Exif\0\0` prefix. Their bodies are read with `read_exact_vec` (bogus length fields cannot force a huge allocation); all other chunks (`VP8`, `VP8L`, `VP8X`, `ANIM`, `ANMF`, …) are skipped by seeking, without reading them.
+
+#### EXIF (`exif.rs`, JPEG APP1 / WebP EXIF chunk)
+
+A minimal TIFF IFD walker — no external EXIF library. One EXIF block yields up to three records, in this order:
+
+```
+Exif\0\0 prefix (optional) → TIFF header (II/MM + magic 42)
+→ UserComment (tag 0x9286) in IFD0, or in the ExifIFD (tag 0x8769) → decode charset prefix + payload
+→ IFD0 ASCII tags of the form `prompt:{json}` / `workflow:{json}` → §6.3, keys `prompt` / `workflow`
+```
+
+ComfyUI's WebP and AVIF savers (`comfy_api/latest/_ui.py`, `_create_webp_metadata`) write `prompt:` into Model (0x0110) and each `extra_pnginfo` entry into Make (0x010F), then 0x010E and down — `workflow:` first. Other keys and plain camera values (no `key:` prefix) are ignored. These values follow the PNG `prompt` / `workflow` rules: JSON that is not recoverable is kept as plain text, generator `Unknown`.
+
+| Charset tag | Decoding |
 |---|---|
-| `png.rs` | Reads PNG `tEXt` / `iTXt` chunks before `IDAT`; handles invalid or truncated chunks by returning partial/empty results. |
-| `jpeg.rs` | Reads JPEG COM and APP1 XMP/EXIF segments; stops safely on scan data or malformed segments. |
-| `webp.rs` | Reads RIFF/WebP chunks; handles `XMP ` and `EXIF`, skips image data chunks without loading them. |
-| `exif.rs` | Decodes TIFF/EXIF `UserComment` in ASCII or UTF-16, big-endian or little-endian. Empty or invalid comments return `None`. |
+| `ASCII\0\0\0`, `JIS\0\0\0\0\0`, 8 zero bytes | Rest as lossy UTF-8 |
+| `UNICODE\0` | UTF-16. Byte order: BOM if present; else guessed from where the zero bytes of ASCII characters fall (piexif and most ComfyUI savers write big-endian even in little-endian TIFF); else the TIFF byte order |
+| No charset tag (Pillow writes a plain string) | Whole value as lossy UTF-8 |
 
-Structured metadata parsing is layered on top of the text/JSON extracted by those parsers:
+**Safety limits:**
+- IFD recursion depth capped at **4**
+- Every read checks `offset + length <= buffer.len()`
+- Oversized `count` field (declared length > available bytes) → decode what fits, no panic
+
+UserComment text that is a JSON object goes through §6.3 (ComfyUI); other text through `a1111::extract_details`, because UserComment often contains full A1111-style parameter blocks.
+
+### 6.2 Lenient JSON (`json_repair.rs`)
+
+ComfyUI values (`prompt` / `workflow` keywords and tags, JSON objects in COM / UserComment) are parsed leniently:
+
+- A document cut off before its end is recovered up to its last complete value: every value completed before the cut is kept and the objects and arrays left open around it are closed.
+- Python's `NaN` / `Infinity` / `-Infinity` tokens, which `json.dumps` writes for non-finite floats, are read as `null`.
+
+NovelAI `Comment` JSON is still parsed strictly (see §6.5).
+
+### 6.3 Structured extraction
+
+Structured metadata parsing is layered on top of the text/JSON extracted by the container parsers:
 
 | Source | Structured extraction |
 |---|---|
-| A1111 / Forge-style text | `a1111.rs` splits `positive_prompt` and `negative_prompt` at `Negative prompt:`, parses `Model:`, and extracts LoRA tags of the form `<lora:name:weight>`. |
-| ComfyUI workflow JSON | `comfyui.rs` parses generation model names from common checkpoint/UNET loader nodes, LoRA entries from `LoraLoader` and `Power Lora Loader (rgthree)`, and positive/negative prompts by tracing `KSampler` / `CFGGuider` conditioning inputs to text encode nodes. The conditioning **output slot** travels with the reference: slot 0 is the positive stream, slot ≥ 1 is the negative stream, so a node that encodes both prompts in one pass (`TextEncodeQwenImage21`, which emits positive and negative conditioning from one node) resolves to its `prompt` and `negative_prompt` fields respectively instead of reporting the positive prompt twice. A slot-0 reference reads the standard prompt fields (`text_g`, `text_l`, `text`, `prompt`) whether it feeds `positive` or `negative`; `neg` / `negative_prompt` / `negative` are only a fallback for nodes without them. |
+| A1111 / Forge-style text | `a1111.rs` splits `positive_prompt` and `negative_prompt` at `Negative prompt:`, extracts LoRA tags of the form `<lora:name:weight>`, and reads the model with `parse_model()`: `, Model:` / `\nModel:` / `Model:` in that order, value up to the next comma or newline, quoted values (`Model: "name, with comma.safetensors"`) supported, and a `Model hash:` match skipped. |
+| ComfyUI JSON | `comfyui.rs`, described below. |
 
-All structured fields are optional. If JSON is missing, truncated, plugin-specific, or not parseable, the original `prompt` string is preserved for search and the structured fields remain blank.
+**Accepted top-level shapes:** an object whose values are nodes with `class_type` + `inputs`; `{"prompt": <API or UI>}`; `{"workflow": <UI>}`; a UI workflow (`nodes` + `links`). Anything else yields no record. Truncated JSON is first recovered up to its last complete value (§6.2).
+
+Two parallel extractions merge into one `(prompt, PromptDetails)` (`comfyui::extract_workflow`):
+
+**A. Searchable prompt text** (for matching):
+1. Scan all nodes; collect non-empty strings from text-encode nodes (`CLIPTextEncode`, `CLIPTextEncodeSDXL`, `CLIPTextEncodeFlux`, `TextEncodeQwenImageEdit*`, any `class_type` containing `Prompt` or `TextEncode`).
+2. Fields checked per node: `text_g`, `text_l` (SDXL), `clip_l`, `t5xxl` (Flux), `text`, `prompt`, plus negative fields `neg`, `negative_prompt`.
+3. Deduplicate identical strings; join with `" | "`.
+4. **Fallback:** if step 1–3 yield nothing, join sampler-traced `positive_prompt` and `negative_prompt` with `" | "`.
+
+**B. Structured details** (`PromptDetails`):
+
+| Field | Source |
+|---|---|
+| `model` | `CheckpointLoader*` / `UNETLoader` / `UnetLoaderGGUF` nodes → `inputs.ckpt_name` or `inputs.unet_name`; otherwise any node carrying one of those fields (custom loaders) |
+| `loras` | Any node whose `class_type` contains `"lora"` (case-insensitive). Standard `LoraLoader`: `lora_name` + weights. rgthree `Power Lora Loader`: object-valued inputs with `"lora"` key; skip if `"on": false`. |
+| `positive_prompt` / `negative_prompt` | First `KSampler*` / `SamplerCustom*` or guider (`CFGGuider`, `BasicGuider`, `DualCFGGuider`) that resolves → follow the positive input (`positive`, or a guider's `conditioning` / `cond1`) and `negative` node refs (id **and output slot**) through the conditioning graph |
+
+A record is created when the prompt text is non-empty or a model / LoRA / sampler-traced prompt exists (`has_extractable_content`).
+
+**Conditioning graph walk** (`resolve_conditioning_text`):
+- Node refs are `["node_id", slot_index]` arrays; the conditioning **output slot** travels with the reference (`CondRef { id, index }`): slot 0 is the positive stream, slot ≥ 1 is the negative stream.
+- Slot ≥ 1 reads only `neg` / `negative_prompt` / `negative`, never the shared positive field. A node that encodes both prompts in one pass (`TextEncodeQwenImage21`, which emits positive and negative conditioning from one node) therefore resolves to its `prompt` and `negative_prompt` fields respectively instead of reporting the positive prompt twice — and to nothing when `negative_prompt` is empty.
+- Slot 0 encodes the node's main prompt whichever sampler input it feeds: standard fields `text_g` / `text_l` / `clip_l` / `t5xxl` / `text` / `prompt` first, then a role-named fallback (`positive`, or `neg` / `negative_prompt` / `negative` for a negative ref).
+- If target is text-encode node → extract the fields above.
+- If target is `ZeroOut` → return `None` (empty negative conditioning).
+- Else follow role-specific input fields: positive → `positive`, `conditioning`, `conditioning_1`, `conditioning_2` (ConditioningCombine), `conditioning_to`, `conditioning_from` (ConditioningAverage/Concat), `conditioning1`, `conditioning2`, `cond`; negative → `negative`, `neg`, then the same chain fields. Role-named inputs reset the role for the next hop; neutral chain fields keep it.
+- **Cycle guard:** `HashSet<(String, u64)>` of visited node ID + slot pairs.
+
+All structured fields are optional. Truncated JSON is recovered (§6.2); a value that cannot be parsed as JSON at all keeps its original text as the searchable `prompt` (generator `Unknown`, A1111-style parse), and the structured fields stay blank when nothing can be read from it.
+
+### 6.4 Routing matrix
+
+```
+PNG keyword "parameters"  ──→ a1111::extract_details          [A1111]
+PNG keyword "prompt" / "workflow" ──→ lenient JSON OK  → comfyui::extract_workflow  [ComfyUI]
+                                 └→ not JSON        → a1111::extract_details      [Unknown]
+PNG keyword "Comment"   ──→ serde_json OK  → json["prompt"] → a1111       [NovelAI]
+                         └→ serde_json ERR → a1111::extract_details      [Unknown]
+PNG keyword "Description" ─→ a1111::extract_details          [NovelAI]
+
+JPEG COM                ──→ JSON object → comfyui  [ComfyUI]; else a1111  [A1111]
+JPEG APP1 XMP           ──→ extract_xmp_description → a1111 [InvokeAI/Unknown]
+JPEG APP1 EXIF          ──→ UserComment: JSON object → comfyui [ComfyUI]; else a1111 [Unknown]
+                         └→ IFD0 "prompt:" / "workflow:" tags → (same as PNG "prompt" / "workflow")
+
+WebP XMP chunk          ──→ (same as JPEG XMP)
+WebP EXIF chunk         ──→ (same as JPEG EXIF)
+
+"Lenient JSON": truncated documents are recovered up to the last complete value, and
+Python's NaN / Infinity / -Infinity tokens are read as null.
+```
+
+### 6.5 Known limitations
+
+| Limitation | Impact | Workaround |
+|---|---|---|
+| ComfyUI UI subgraphs | Nodes inside `definitions.subgraphs` are not expanded, so the `workflow` record can miss prompts and models held there; the `prompt` record is unaffected | Search the `prompt` record |
+| AVIF | Extension not supported, so ComfyUI AVIF output (same `prompt:` / `workflow:` EXIF tags as WebP) is never read | Save as PNG or WebP |
+| TIFF / GIF / BMP | Skipped (unsupported extension) | — |
+| `zTXt` PNG chunks | Not read | — |
+| PNG metadata after `IDAT` | Never read (parsing stops at image data) | Re-save with metadata before image data |
+| WebP EXIF / XMP chunk cut off by end of file | The whole chunk is dropped; unlike JPEG UserComment JSON, no partial recovery | — |
+| JPEG Extended XMP (`http://ns.adobe.com/xmp/extension/` APP1 segments) | Skipped | — |
+| XMP formats without `<dc:description><rdf:Alt><rdf:li>` | `None` returned | — |
+| Multiple XMP `<rdf:li>` entries | Only first extracted | — |
+| NovelAI `Comment` JSON | Parsed strictly: truncated JSON or `NaN` falls back to plain text instead of the lenient ComfyUI parser | — |
+| A1111-style text in EXIF UserComment | Generator reported as `unknown`, not `a1111`, even when the text has A1111 parameters | Model / prompts are still parsed |
+| `DualCFGGuider` | Positive prompt taken from `cond1` only; `cond2` is ignored | — |
+| UI workflow node with an `id` that is neither number nor string | Conversion of the whole `workflow` aborts (no record from it) | — |
+
+### 6.6 Multi-record files
+
+The GUI shows one grid cell per record, not per file: a ComfyUI image carrying both `prompt` and `workflow` (standard ComfyUI PNG, official ComfyUI WebP) appears as two results, the same records `ips_cli` reports.
 
 ---
 
@@ -377,7 +538,7 @@ Only one search thread runs at a time — the Search button is disabled while `s
 ```text
 ips_gui/
 ├── Cargo.toml                   # eframe, rfd, rayon, image, walkdir,
-│                                # fuzzy-matcher, serde*, csv, regex
+│                                # fuzzy-matcher, serde*, csv, regex, flate2
 ├── build.rs                     # Windows: embeds icon via winres
 ├── icon.svg
 ├── README.md
@@ -385,24 +546,31 @@ ips_gui/
 ├── .github/
 │   └── workflows/
 │       └── build.yml            # CI + release: Windows / macOS / Linux
+├── tests/
+│   ├── metadata_fixtures.rs     # builds an image per fixture, compares extract_prompt output
+│   └── fixtures/
+│       ├── metadata/            # metadata fixtures (*.json), identical to ips_cli's
+│       └── qwen21_shared_encode.json
 └── src/
     ├── main.rs                  # App state, UI, search, export
+    ├── lib.rs                   # lib target: `pub mod ips;`
     └── ips/                     # Embedded search library
         ├── mod.rs
         ├── types.rs             # Config, MatchResult, PromptRecord, PromptDetails, LoraInfo, Generator, MatchMode
         ├── discovery.rs         # walkdir-based file discovery
         ├── matcher.rs           # exact / fuzzy / regex matching
         └── extract/
-            ├── mod.rs           # dispatch by file extension
+            ├── mod.rs           # dispatch by file extension; shared record constructors
             ├── a1111.rs         # A1111/Forge text metadata parsing
             ├── png.rs           # tEXt / iTXt chunk parsing
             ├── jpeg.rs          # COM marker, APP1 XMP / EXIF
+            ├── json_repair.rs   # lenient JSON: truncation recovery, NaN / Infinity
             ├── webp.rs          # RIFF chunk parsing, XMP / EXIF
-            ├── exif.rs          # TIFF/EXIF UserComment decoder
+            ├── exif.rs          # TIFF/EXIF UserComment and IFD0 prompt:/workflow: tags
             └── comfyui.rs       # ComfyUI workflow JSON and structured metadata extraction
 ```
 
-`src/ips/` contains the full extraction and matching pipeline. It is an internal module — not a separate crate — so `ips_gui` builds from a single `cargo build` with no sibling directory required. `ips_cli` continues to maintain its own copy and evolves independently.
+`src/ips/` contains the full extraction and matching pipeline. It is the lib target of the same package (`ips_gui::ips`, root `src/lib.rs`) — not a separate crate — so `ips_gui` builds from a single `cargo build` with no sibling directory required; the bin (`src/main.rs`) and the integration tests both use it through that path. `ips_cli` continues to maintain its own copy and evolves independently.
 
 ---
 

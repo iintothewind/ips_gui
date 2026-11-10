@@ -1,0 +1,198 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "LoraLoader model/clip weights differ and match",
+  "Power Lora Loader: on, off, no strength, strength_model",
+  "duplicate LoRA name kept once",
+  "clip-only weight",
+  "no weight → 1",
+  "null strength → 1"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "ckpt_name": "sd_xl_base_1.0.safetensors"
+     },
+     "class_type": "CheckpointLoaderSimple"
+    },
+    "2": {
+     "inputs": {
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ],
+      "lora_name": "watercolor_style.safetensors",
+      "strength_model": 0.8,
+      "strength_clip": 0.6
+     },
+     "class_type": "LoraLoader"
+    },
+    "3": {
+     "inputs": {
+      "model": [
+       "2",
+       0
+      ],
+      "clip": [
+       "2",
+       1
+      ],
+      "lora_name": "paper_texture.safetensors",
+      "strength_model": 0.5,
+      "strength_clip": 0.5
+     },
+     "class_type": "LoraLoader"
+    },
+    "4": {
+     "inputs": {
+      "model": [
+       "3",
+       0
+      ],
+      "clip": [
+       "3",
+       1
+      ],
+      "PowerLoraLoaderHeaderWidget": {
+       "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+       "on": true,
+       "lora": "ink_lines.safetensors",
+       "strength": 0.7
+      },
+      "lora_2": {
+       "on": false,
+       "lora": "disabled_style.safetensors",
+       "strength": 1
+      },
+      "lora_3": {
+       "on": true,
+       "lora": "soft_light.safetensors"
+      },
+      "lora_4": {
+       "on": true,
+       "lora": "grain.safetensors",
+       "strength_model": 0.3
+      },
+      "➕ Add Lora": "",
+      "lora_5": {
+       "on": true,
+       "lora": "watercolor_style.safetensors",
+       "strength": 0.2
+      },
+      "lora_6": {
+       "on": true,
+       "lora": "null_strength.safetensors",
+       "strength": null
+      }
+     },
+     "class_type": "Power Lora Loader (rgthree)"
+    },
+    "5": {
+     "inputs": {
+      "text": "a watercolor map of an island",
+      "clip": [
+       "4",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode"
+    },
+    "6": {
+     "inputs": {
+      "text": "photo, 3d render",
+      "clip": [
+       "4",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode"
+    },
+    "7": {
+     "inputs": {
+      "model": [
+       "4",
+       0
+      ],
+      "positive": [
+       "5",
+       0
+      ],
+      "negative": [
+       "6",
+       0
+      ]
+     },
+     "class_type": "KSampler"
+    },
+    "8": {
+     "inputs": {
+      "lora_name": "clip_only.safetensors",
+      "strength_clip": 0.9
+     },
+     "class_type": "LoraLoader"
+    },
+    "9": {
+     "inputs": {
+      "lora_name": "no_weight.safetensors"
+     },
+     "class_type": "LoraLoader"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a watercolor map of an island | photo, 3d render",
+   "model": "sd_xl_base_1.0.safetensors",
+   "loras": [
+    {
+     "name": "watercolor_style.safetensors",
+     "weight": "0.8 / 0.6"
+    },
+    {
+     "name": "paper_texture.safetensors",
+     "weight": "0.5"
+    },
+    {
+     "name": "ink_lines.safetensors",
+     "weight": "0.7"
+    },
+    {
+     "name": "soft_light.safetensors",
+     "weight": "1"
+    },
+    {
+     "name": "grain.safetensors",
+     "weight": "0.3"
+    },
+    {
+     "name": "null_strength.safetensors",
+     "weight": "1"
+    },
+    {
+     "name": "clip_only.safetensors",
+     "weight": "0.9"
+    },
+    {
+     "name": "no_weight.safetensors",
+     "weight": "1"
+    }
+   ],
+   "positive_prompt": "a watercolor map of an island",
+   "negative_prompt": "photo, 3d render"
+  }
+ ]
+}

@@ -1,0 +1,21 @@
+{
+ "origin": "content/comfy/202601/20260125/20260125200830.webp",
+ "covers": [
+  "webp-exif:UNICODE:MM:empty"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": false,
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "be",
+    "text": ""
+   }
+  }
+ ],
+ "expected": []
+}

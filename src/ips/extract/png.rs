@@ -1,8 +1,10 @@
 use std::io::{BufReader, Read};
 use std::path::Path;
 
+use flate2::read::ZlibDecoder;
+
 use crate::ips::types::{Generator, PromptRecord};
-use super::{a1111, comfyui};
+use super::a1111;
 
 const PNG_SIGNATURE: &[u8; 8] = b"\x89PNG\r\n\x1a\n";
 
@@ -46,13 +48,15 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
             break;
         }
 
-        let mut chunk_data = vec![0u8; length];
-        if reader.read_exact(&mut chunk_data).is_err() {
-            if verbose {
-                eprintln!("ips: {}: truncated chunk", path.display());
+        let chunk_data = match super::read_exact_vec(&mut reader, length) {
+            Ok(data) => data,
+            Err(_) => {
+                if verbose {
+                    eprintln!("ips: {}: truncated chunk", path.display());
+                }
+                break;
             }
-            break;
-        }
+        };
 
         let mut crc_buf = [0u8; 4];
         if reader.read_exact(&mut crc_buf).is_err() {
@@ -62,12 +66,12 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
         match &chunk_type {
             b"tEXt" => {
                 if let Some((keyword, value)) = parse_text_chunk(&chunk_data) {
-                    process_keyword(path, &keyword, &value, &mut results);
+                    process_keyword(path, &keyword, &value, verbose, &mut results);
                 }
             }
             b"iTXt" => {
                 if let Some((keyword, value)) = parse_itxt_chunk(&chunk_data) {
-                    process_keyword(path, &keyword, &value, &mut results);
+                    process_keyword(path, &keyword, &value, verbose, &mut results);
                 }
             }
             _ => {}
@@ -79,19 +83,28 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
 
 fn parse_text_chunk(data: &[u8]) -> Option<(String, String)> {
     let null_pos = data.iter().position(|&b| b == 0)?;
-    let keyword = String::from_utf8_lossy(&data[..null_pos]).into_owned();
-    let value = String::from_utf8_lossy(&data[null_pos + 1..]).into_owned();
-    Some((keyword, value))
+    Some((latin1_or_utf8(&data[..null_pos]), latin1_or_utf8(&data[null_pos + 1..])))
+}
+
+/// tEXt is Latin-1 by specification (Pillow writes it that way); some tools store UTF-8
+/// instead, so valid UTF-8 is taken as such.
+fn latin1_or_utf8(bytes: &[u8]) -> String {
+    match std::str::from_utf8(bytes) {
+        Ok(text) => text.to_string(),
+        Err(_) => bytes.iter().map(|&b| char::from(b)).collect(),
+    }
 }
 
 fn parse_itxt_chunk(data: &[u8]) -> Option<(String, String)> {
     let kw_end = data.iter().position(|&b| b == 0)?;
     let keyword = String::from_utf8_lossy(&data[..kw_end]).into_owned();
 
-    let mut pos = kw_end + 3;
-    if pos > data.len() {
+    let mut pos = kw_end + 1;
+    if pos + 1 >= data.len() {
         return None;
     }
+    let compression_flag = data[pos];
+    pos += 2; // skip compression flag + method
 
     let lang_end = data[pos..].iter().position(|&b| b == 0)?;
     pos += lang_end + 1;
@@ -99,11 +112,23 @@ fn parse_itxt_chunk(data: &[u8]) -> Option<(String, String)> {
     let trans_end = data[pos..].iter().position(|&b| b == 0)?;
     pos += trans_end + 1;
 
-    let value = String::from_utf8_lossy(&data[pos..]).into_owned();
+    let raw = &data[pos..];
+    let value = if compression_flag == 1 {
+        inflate_zlib(raw)?
+    } else {
+        String::from_utf8_lossy(raw).into_owned()
+    };
     Some((keyword, value))
 }
 
-fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<PromptRecord>) {
+fn inflate_zlib(data: &[u8]) -> Option<String> {
+    let mut decoder = ZlibDecoder::new(data);
+    let mut buf = Vec::new();
+    decoder.read_to_end(&mut buf).ok()?;
+    Some(String::from_utf8_lossy(&buf).into_owned())
+}
+
+fn process_keyword(path: &Path, keyword: &str, value: &str, verbose: bool, results: &mut Vec<PromptRecord>) {
     match keyword {
         "parameters" => {
             results.push(PromptRecord::with_details(
@@ -114,33 +139,8 @@ fn process_keyword(path: &Path, keyword: &str, value: &str, results: &mut Vec<Pr
                 a1111::extract_details(value),
             ));
         }
-        "prompt" => {
-            match serde_json::from_str::<serde_json::Value>(value) {
-                Ok(json) => {
-                    let prompts = comfyui::extract_from_workflow(&json);
-                    if !prompts.is_empty() {
-                        results.push(PromptRecord::with_details(
-                            path.to_path_buf(),
-                            prompts.join(" | "),
-                            Generator::ComfyUI,
-                            "prompt",
-                            comfyui::extract_details_from_workflow(&json),
-                        ));
-                    }
-                }
-                Err(_) => {
-                    if !value.trim().is_empty() {
-                        results.push(PromptRecord::with_details(
-                            path.to_path_buf(),
-                            value.to_string(),
-                            Generator::Unknown,
-                            "prompt",
-                            a1111::extract_details(value),
-                        ));
-                    }
-                }
-            }
-        }
+        "prompt" => results.extend(super::comfyui_keyword_record(path, "prompt", value, verbose)),
+        "workflow" => results.extend(super::comfyui_keyword_record(path, "workflow", value, verbose)),
         "Comment" => {
             match serde_json::from_str::<serde_json::Value>(value) {
                 Ok(json) => {

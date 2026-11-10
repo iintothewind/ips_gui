@@ -1,0 +1,890 @@
+{
+ "origin": "content/comfy/202510/20251025/193500_00001_.png",
+ "covers": [
+  "enc-field:text",
+  "enc:CLIPTextEncode",
+  "family:illustrious",
+  "lora:model+clip-same",
+  "model:CheckpointLoaderSimple",
+  "node:KSampler*",
+  "png:tEXt:prompt",
+  "png:tEXt:workflow",
+  "prompt:api-format",
+  "ref:negative",
+  "ref:positive",
+  "ui-widget:CheckpointLoaderSimple",
+  "ui-widget:LoraLoader",
+  "workflow:ui-format"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "PLTE",
+   "hex": "ffffff0d1d010c0901080700030600010300091700030900040d000712000f2101100b01150e01fefffd172d011a3101122801132401101102243b011f37011910021f13036646241714052f49022a44022640013d58043854031828012517031f32011118016b4a272d1a041e381762421e486504331f065e3f1b3a2308415f03223e1e4d3111324f02fefef9472d0d573a1941280a2b492b171e01274325fefef41b340c4f6c041e1807374c04546f1a647f1d704f2c4e6912fdfdee5c77191a3113523616142b0cfcfcc2fdfce8547308304e32fbfcb53554397755315a3e1d7690253b5b40fdfce0fcfbd66c8725465d0c5d7b06fcfdcc212a022c48195f42224060482e3b04243e118daa57658234fafca86f8d3a83a14a47685098b45dedf29180992532440486613d2932045c792b486317f3f79ae7ee8a50715435511577974b658206e1e9827d5a37869d339eb2473654277691087b973b405e2fd8e16b8da52ba27349cdd969895830f3f5aac4d262a2be686b884bf4f1c23f5a19e0e87397ac35809a5bf8f4cec1cf538d6945b7c45a6d8917dae17e809907557760f2f2b626210b48683fe4e49fe5e8bc618470946036d3dc76ecee9fa9bd4358743feaeaac90a9424c6828434f109a6b40546f318ba2096e87036e907d5f8060acc152b7c7477d4d26fbfc9cadc873768d55617d49ebef7cd9e0af7a9b88a2b737967450dbe294d0d95898ae07ccd5a8cddb898da56a5a380cbad47fbbc96ad8d596a7bc06c8cd8e6a6b29c8d1753a410e9caf7086a596f8f88954581d362e19afb9765857366d8d6abdc380b7ca07888b3dadb3557a812f949943f7f2dd6f401a5d6e0793b0a2464028c8da05a6a053ab794ecbbc649d7e5b8f9c59ab86617f9773715616bdac62b3c22a9fb320b19270a76a34ddcf80a0bbafe9dd90656847d8dc3a876c23bf7d43f6ddb1c7d12beee7cfb3c19479763fd2c276b0c6bce2e655fbf870a0b488e0ec088ea284c39e7af5f258a58b38c08d60bdd1ccbba447f4ca8fe6af70cfdcd4f1f4edd89754caac8ee3cbadf0f131deba93dde9e6797663"
+  },
+  {
+   "chunk": "pHYs",
+   "hex": "00000b1300000b1301"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "workflow",
+   "json": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "revision": 0,
+    "last_node_id": 20,
+    "last_link_id": 66,
+    "nodes": [
+     {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+       1187.4924981527665,
+       5.804431298647922
+      ],
+      "size": [
+       708.5904226755401,
+       275.48254943142706
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 63
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CONDITIONING",
+        "type": "CONDITIONING",
+        "links": [
+         6
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+       "(score_8,score_7,score_6,score_5,score_4), anime, 3d, rendered, modern, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated"
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+     },
+     {
+      "id": 7,
+      "type": "VAEDecode",
+      "pos": [
+       2397.9396856571448,
+       70.24793986758411
+      ],
+      "size": [
+       140,
+       46
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "samples",
+        "type": "LATENT",
+        "link": 9
+       },
+       {
+        "name": "vae",
+        "type": "VAE",
+        "link": 10
+       }
+      ],
+      "outputs": [
+       {
+        "name": "IMAGE",
+        "type": "IMAGE",
+        "links": [
+         20
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "VAEDecode"
+      },
+      "widgets_values": []
+     },
+     {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+       -295.6306497977966,
+       34.84612576261136
+      ],
+      "size": [
+       270,
+       98
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+       {
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         66
+        ]
+       },
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         1
+        ]
+       },
+       {
+        "name": "VAE",
+        "type": "VAE",
+        "links": [
+         10
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CheckpointLoaderSimple"
+      },
+      "widgets_values": [
+       "novaAsianXL_illustriousV70.safetensors"
+      ]
+     },
+     {
+      "id": 6,
+      "type": "EmptyLatentImage",
+      "pos": [
+       707.4122508805143,
+       -28.33841882927115
+      ],
+      "size": [
+       270,
+       106
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "width",
+        "type": "INT",
+        "widget": {
+         "name": "width"
+        },
+        "link": 34
+       },
+       {
+        "name": "height",
+        "type": "INT",
+        "widget": {
+         "name": "height"
+        },
+        "link": 35
+       }
+      ],
+      "outputs": [
+       {
+        "name": "LATENT",
+        "type": "LATENT",
+        "links": [
+         7
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+       1216,
+       768,
+       1
+      ]
+     },
+     {
+      "id": 20,
+      "type": "LoraLoader",
+      "pos": [
+       624.3622127742416,
+       -507.7707001866354
+      ],
+      "size": [
+       270,
+       126
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "model",
+        "type": "MODEL",
+        "link": 66
+       },
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 64
+       }
+      ],
+      "outputs": [
+       {
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         65
+        ]
+       },
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         62,
+         63
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "LoraLoader"
+      },
+      "widgets_values": [
+       "expressive_h.safetensors",
+       0.8,
+       0.8
+      ]
+     },
+     {
+      "id": 2,
+      "type": "CLIPSetLastLayer",
+      "pos": [
+       181.05982941549678,
+       -486.0327494544021
+      ],
+      "size": [
+       270,
+       58
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 1
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         64
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CLIPSetLastLayer"
+      },
+      "widgets_values": [
+       -2
+      ]
+     },
+     {
+      "id": 8,
+      "type": "SaveImage",
+      "pos": [
+       1991.840041787427,
+       -627.7207703915051
+      ],
+      "size": [
+       564.0144518350298,
+       552.194174986399
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "images",
+        "type": "IMAGE",
+        "link": 20
+       }
+      ],
+      "outputs": [],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65"
+      },
+      "widgets_values": [
+       "%date:yyyyMMdd%/%date:hhmmss%"
+      ]
+     },
+     {
+      "id": 5,
+      "type": "KSampler",
+      "pos": [
+       2011.0724020676917,
+       -0.8327302014033104
+      ],
+      "size": [
+       270,
+       262
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "model",
+        "type": "MODEL",
+        "link": 65
+       },
+       {
+        "name": "positive",
+        "type": "CONDITIONING",
+        "link": 5
+       },
+       {
+        "name": "negative",
+        "type": "CONDITIONING",
+        "link": 6
+       },
+       {
+        "name": "latent_image",
+        "type": "LATENT",
+        "link": 7
+       }
+      ],
+      "outputs": [
+       {
+        "name": "LATENT",
+        "type": "LATENT",
+        "links": [
+         9
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+       607994013204752,
+       "randomize",
+       30,
+       7,
+       "dpmpp_2m",
+       "karras",
+       1
+      ]
+     },
+     {
+      "id": 16,
+      "type": "ResolutionMaster",
+      "pos": [
+       281.38009199880463,
+       -29.883169946182203
+      ],
+      "size": [
+       330,
+       680
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "input_image",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       }
+      ],
+      "outputs": [
+       {
+        "name": "",
+        "type": "INT",
+        "links": [
+         34
+        ]
+       },
+       {
+        "name": "",
+        "type": "INT",
+        "links": [
+         35
+        ]
+       },
+       {
+        "name": "",
+        "type": "FLOAT",
+        "links": null
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfyui-resolution-master",
+       "ver": "1.4.7",
+       "Node name for S&R": "ResolutionMaster",
+       "mode": "Manual",
+       "valueX": 1344,
+       "valueY": 832,
+       "canvas_min_x": 0,
+       "canvas_max_x": 2048,
+       "canvas_step_x": 64,
+       "canvas_min_y": 0,
+       "canvas_max_y": 2048,
+       "canvas_step_y": 64,
+       "canvas_decimals_x": 0,
+       "canvas_decimals_y": 0,
+       "canvas_snap": true,
+       "canvas_dots": true,
+       "canvas_frame": true,
+       "action_slider_snap_min": 16,
+       "action_slider_snap_max": 256,
+       "action_slider_snap_step": 16,
+       "scaling_slider_min": 0.1,
+       "scaling_slider_max": 4,
+       "scaling_slider_step": 0.1,
+       "megapixels_slider_min": 0.5,
+       "megapixels_slider_max": 6,
+       "megapixels_slider_step": 0.1,
+       "snapValue": 16,
+       "upscaleValue": 1,
+       "targetResolution": 720,
+       "targetMegapixels": 1.2,
+       "rescaleMode": "manual",
+       "rescaleValue": 1,
+       "autoDetect": false,
+       "autoFitOnChange": false,
+       "autoResizeOnChange": false,
+       "selectedCategory": "SDXL",
+       "selectedPreset": "3:2 Landscape",
+       "useCustomCalc": false,
+       "manual_slider_min_w": 64,
+       "manual_slider_max_w": 2048,
+       "manual_slider_step_w": 64,
+       "manual_slider_min_h": 64,
+       "manual_slider_max_h": 2048,
+       "manual_slider_step_h": 64,
+       "section_actions_collapsed": false,
+       "section_scaling_collapsed": false,
+       "section_autoDetect_collapsed": false,
+       "section_presets_collapsed": false
+      },
+      "widgets_values": [
+       "Manual",
+       1344,
+       832,
+       false,
+       "manual",
+       1
+      ]
+     },
+     {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "pos": [
+       1187.6949467904917,
+       -554.2552641929269
+      ],
+      "size": [
+       701.6677710270837,
+       450.4025262778367
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 62
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CONDITIONING",
+        "type": "CONDITIONING",
+        "links": [
+         5
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+       "masterpiece, best quality, amazing quality, 4k, 8k, very aesthetic, high resolution, ultra-detailed, absurdres, scenery, photo_realistic, photo, realistic, \n\n1girl, solo, (cute:1.2), brown hair, long hair, closed eyes, looking away, generous, flower armor dress, contrapposto, head tilt, twisted torso, dutch angle, from above, medium shot, (dappled sunlight, sunburst, lens flare:1.2), vignetting, exposure blend, bokeh, (cinematic, teal and orange:0.8), dark forest, green theme, ground, leaf, BREAK, depth of field, photorealistic details"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+     }
+    ],
+    "links": [
+     [
+      1,
+      1,
+      1,
+      2,
+      0,
+      "CLIP"
+     ],
+     [
+      5,
+      3,
+      0,
+      5,
+      1,
+      "CONDITIONING"
+     ],
+     [
+      6,
+      4,
+      0,
+      5,
+      2,
+      "CONDITIONING"
+     ],
+     [
+      7,
+      6,
+      0,
+      5,
+      3,
+      "LATENT"
+     ],
+     [
+      9,
+      5,
+      0,
+      7,
+      0,
+      "LATENT"
+     ],
+     [
+      10,
+      1,
+      2,
+      7,
+      1,
+      "VAE"
+     ],
+     [
+      20,
+      7,
+      0,
+      8,
+      0,
+      "IMAGE"
+     ],
+     [
+      34,
+      16,
+      0,
+      6,
+      0,
+      "INT"
+     ],
+     [
+      35,
+      16,
+      1,
+      6,
+      1,
+      "INT"
+     ],
+     [
+      62,
+      20,
+      1,
+      3,
+      0,
+      "CLIP"
+     ],
+     [
+      63,
+      20,
+      1,
+      4,
+      0,
+      "CLIP"
+     ],
+     [
+      64,
+      2,
+      0,
+      20,
+      1,
+      "CLIP"
+     ],
+     [
+      65,
+      20,
+      0,
+      5,
+      0,
+      "MODEL"
+     ],
+     [
+      66,
+      1,
+      0,
+      20,
+      0,
+      "MODEL"
+     ]
+    ],
+    "groups": [
+     {
+      "id": 1,
+      "title": "prompt",
+      "bounding": [
+       1148.45467677987,
+       -658.1789186021906,
+       806.226068458893,
+       1000.0832287124604
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+     }
+    ],
+    "config": {},
+    "extra": {
+     "ds": {
+      "scale": 1.978446689001579,
+      "offset": [
+       -1608.1832843224404,
+       761.0655934348429
+      ]
+     },
+     "frontendVersion": "1.28.7"
+    },
+    "version": 0.4
+   }
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "ckpt_name": "novaAsianXL_illustriousV70.safetensors"
+     },
+     "class_type": "CheckpointLoaderSimple",
+     "_meta": {
+      "title": "Load Checkpoint"
+     }
+    },
+    "2": {
+     "inputs": {
+      "stop_at_clip_layer": -2,
+      "clip": [
+       "1",
+       1
+      ]
+     },
+     "class_type": "CLIPSetLastLayer",
+     "_meta": {
+      "title": "CLIP Set Last Layer"
+     }
+    },
+    "3": {
+     "inputs": {
+      "text": "masterpiece, best quality, amazing quality, 4k, 8k, very aesthetic, high resolution, ultra-detailed, absurdres, scenery, photo_realistic, photo, realistic, \n\n1girl, solo, (cute:1.2), brown hair, long hair, closed eyes, looking away, generous, flower armor dress, contrapposto, head tilt, twisted torso, dutch angle, from above, medium shot, (dappled sunlight, sunburst, lens flare:1.2), vignetting, exposure blend, bokeh, (cinematic, teal and orange:0.8), dark forest, green theme, ground, leaf, BREAK, depth of field, photorealistic details",
+      "clip": [
+       "20",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode",
+     "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+     }
+    },
+    "4": {
+     "inputs": {
+      "text": "(score_8,score_7,score_6,score_5,score_4), anime, 3d, rendered, modern, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated",
+      "clip": [
+       "20",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode",
+     "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+     }
+    },
+    "5": {
+     "inputs": {
+      "seed": 607994013204752,
+      "steps": 30,
+      "cfg": 7.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "model": [
+       "20",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "6",
+       0
+      ]
+     },
+     "class_type": "KSampler",
+     "_meta": {
+      "title": "KSampler"
+     }
+    },
+    "6": {
+     "inputs": {
+      "width": [
+       "16",
+       0
+      ],
+      "height": [
+       "16",
+       1
+      ],
+      "batch_size": 1
+     },
+     "class_type": "EmptyLatentImage",
+     "_meta": {
+      "title": "Empty Latent Image"
+     }
+    },
+    "7": {
+     "inputs": {
+      "samples": [
+       "5",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     },
+     "class_type": "VAEDecode",
+     "_meta": {
+      "title": "VAE Decode"
+     }
+    },
+    "8": {
+     "inputs": {
+      "filename_prefix": "20251025/193500",
+      "images": [
+       "7",
+       0
+      ]
+     },
+     "class_type": "SaveImage",
+     "_meta": {
+      "title": "Save Image"
+     }
+    },
+    "16": {
+     "inputs": {
+      "mode": "Manual",
+      "width": 1344,
+      "height": 832,
+      "auto_detect": false,
+      "rescale_mode": "manual",
+      "rescale_value": 1.0
+     },
+     "class_type": "ResolutionMaster",
+     "_meta": {
+      "title": "Resolution Master"
+     }
+    },
+    "20": {
+     "inputs": {
+      "lora_name": "expressive_h.safetensors",
+      "strength_model": 0.8,
+      "strength_clip": 0.8,
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "2",
+       0
+      ]
+     },
+     "class_type": "LoraLoader",
+     "_meta": {
+      "title": "Load LoRA"
+     }
+    }
+   }
+  },
+  {
+   "chunk": "eXIf",
+   "hex": "49492a000800000006001201030001000000010000001a01050001000000560000001b010500010000005e0000002801030001000000020000001302030001000000010000006987040001000000660000000000000048000000010000004800000001000000060000900700040000003032313001910700040000000102030000a00700040000003031303001a0030001000000ffff000002a00400010000004005000003a00400010000004003000000000000"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "workflow",
+   "generator": "comfyui",
+   "prompt": "masterpiece, best quality, amazing quality, 4k, 8k, very aesthetic, high resolution, ultra-detailed, absurdres, scenery, photo_realistic, photo, realistic, \n\n1girl, solo, (cute:1.2), brown hair, long hair, closed eyes, looking away, generous, flower armor dress, contrapposto, head tilt, twisted torso, dutch angle, from above, medium shot, (dappled sunlight, sunburst, lens flare:1.2), vignetting, exposure blend, bokeh, (cinematic, teal and orange:0.8), dark forest, green theme, ground, leaf, BREAK, depth of field, photorealistic details | (score_8,score_7,score_6,score_5,score_4), anime, 3d, rendered, modern, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated",
+   "model": "novaAsianXL_illustriousV70.safetensors",
+   "loras": [
+    {
+     "name": "expressive_h.safetensors",
+     "weight": "0.8"
+    }
+   ],
+   "positive_prompt": "masterpiece, best quality, amazing quality, 4k, 8k, very aesthetic, high resolution, ultra-detailed, absurdres, scenery, photo_realistic, photo, realistic, \n\n1girl, solo, (cute:1.2), brown hair, long hair, closed eyes, looking away, generous, flower armor dress, contrapposto, head tilt, twisted torso, dutch angle, from above, medium shot, (dappled sunlight, sunburst, lens flare:1.2), vignetting, exposure blend, bokeh, (cinematic, teal and orange:0.8), dark forest, green theme, ground, leaf, BREAK, depth of field, photorealistic details",
+   "negative_prompt": "(score_8,score_7,score_6,score_5,score_4), anime, 3d, rendered, modern, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated"
+  },
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "masterpiece, best quality, amazing quality, 4k, 8k, very aesthetic, high resolution, ultra-detailed, absurdres, scenery, photo_realistic, photo, realistic, \n\n1girl, solo, (cute:1.2), brown hair, long hair, closed eyes, looking away, generous, flower armor dress, contrapposto, head tilt, twisted torso, dutch angle, from above, medium shot, (dappled sunlight, sunburst, lens flare:1.2), vignetting, exposure blend, bokeh, (cinematic, teal and orange:0.8), dark forest, green theme, ground, leaf, BREAK, depth of field, photorealistic details | (score_8,score_7,score_6,score_5,score_4), anime, 3d, rendered, modern, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated",
+   "model": "novaAsianXL_illustriousV70.safetensors",
+   "loras": [
+    {
+     "name": "expressive_h.safetensors",
+     "weight": "0.8"
+    }
+   ],
+   "positive_prompt": "masterpiece, best quality, amazing quality, 4k, 8k, very aesthetic, high resolution, ultra-detailed, absurdres, scenery, photo_realistic, photo, realistic, \n\n1girl, solo, (cute:1.2), brown hair, long hair, closed eyes, looking away, generous, flower armor dress, contrapposto, head tilt, twisted torso, dutch angle, from above, medium shot, (dappled sunlight, sunburst, lens flare:1.2), vignetting, exposure blend, bokeh, (cinematic, teal and orange:0.8), dark forest, green theme, ground, leaf, BREAK, depth of field, photorealistic details",
+   "negative_prompt": "(score_8,score_7,score_6,score_5,score_4), anime, 3d, rendered, modern, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, very displeasing, (worst quality, bad quality:1.2), bad anatomy, sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated"
+  }
+ ]
+}

@@ -1,0 +1,28 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "file ends inside a CRC"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "parameters",
+   "text": "a quiet forest path"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "Comment",
+   "text": "Comment text that gets cut"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "parameters",
+   "generator": "a1111",
+   "prompt": "a quiet forest path",
+   "positive_prompt": "a quiet forest path"
+  }
+ ],
+ "truncate_to": 119
+}

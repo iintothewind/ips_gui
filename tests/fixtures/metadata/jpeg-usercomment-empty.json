@@ -1,0 +1,40 @@
+{
+ "origin": "content/comfy/202602/20260216/20260216124630.jpg",
+ "covers": [
+  "jpeg-exif:UNICODE:MM:empty"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "be",
+    "text": ""
+   }
+  },
+  {
+   "marker": "DB",
+   "hex": "00141414141514171919171f221e221f2e2b27272b2e463236323632466a424e42424e426a5e725d565d725ea985767685a9c3a49ba4c3ecd3d3ecffffffffffff"
+  },
+  {
+   "marker": "DB",
+   "hex": "01141414141514171919171f221e221f2e2b27272b2e463236323632466a424e42424e426a5e725d565d725ea985767685a9c3a49ba4c3ecd3d3ecffffffffffff"
+  },
+  {
+   "marker": "C2",
+   "hex": "0809c0068003012200021101031101"
+  },
+  {
+   "marker": "C4",
+   "hex": "000003010101010000000000000000000000010203040506"
+  },
+  {
+   "marker": "C4",
+   "hex": "0101010101010100000000000000000000000102030405"
+  }
+ ],
+ "expected": []
+}

@@ -1,0 +1,1107 @@
+{
+ "origin": "content/comfy/202604/20260414/20260414222503_00001_.png",
+ "covers": [
+  "enc-field:text",
+  "enc:CLIPTextEncode",
+  "lora:object-off",
+  "model:CheckpointLoaderSimple",
+  "node:KSampler*",
+  "png:tEXt:prompt",
+  "png:tEXt:workflow",
+  "prompt:api-format",
+  "ref:negative",
+  "ref:positive",
+  "ui-widget:CheckpointLoaderSimple",
+  "workflow:ui-format"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "PLTE",
+   "hex": "22394f1d344a233b51243d540a111c04080d050b141f364b070d1621374d0b131f080e1928415a1b324803060a29445d1d2d421f33471d30452b4761131b271d2a3c050a11040810263f572e4964161e2b16212f1b263527384d0d1522212f41365371324f6b253346192331304c671c283807111834516e1018241f2d3f5a80a63c5674334a6428364923344b31476121314511171f2e425a4058760e131c2e445e283b513b59782b3b4f152233111c2b507498354c672d3e535f86ae425d7c3e5e7f3f5b7a3c54700e1827232d3c39516e446383628cb75170933655744b6e91426080294057121e2f577a9f2d405746678a4b67874665865a7da132455c5e83a9374f6b293d551725374c719519273b2532431c222c4862803b5c7c6590bc3857782b384b475f7c4165884a6a8d4d6a8a3f6184445b77557ca46289b25982ad506d8e50779e56779b202a376a99c76c9dcd456a8e4b64823b4f690e0c146995c1334156262f3e151a2336485f1a2a3f435671394c645c87b440536b49729b5674961f26311b1d2575a7d86292c4466d95150f172c3443629fd93845596ea1d5323d4f18131d598bbd4b78a469a7e01e10135669853e495d7cb2e6424e64657fa2507eab77abdf28131484c2f46b85a96c8bb25e99d223222960799a82b9ec6faee852627c72a2d05183b5130a0c596f8e768fb38dcaf64b53674e5a71353846c6d9f37895bcfcfbe2c9e3f9a9d0f6899bbd5992c838191794d3f92f4b7077b8f1bad0efa9bbddb2c5e7bdddf828416395a5c67a9cc785a3cc9fafd14242529cdcfb4e4b5a5b54625b5e7166677c90abd57988a7757d9849211ed8ebfa8393b274626e9fc5ef90beeb75708467738eeaf5fa8577882137565f4c547f6b77695b6752434c3d2a30afdcfa8c8397fcfcf0395a84423b46fbf4d49bb5dd3f6590602d28230b0a85b2df9890a7d4dff3725458a59fb62c282efad5b3fbe8c2f1a991b3b0c7f6c0a2bf8681a5868c743c35c2c2d89f7578d89c93ba999d8c3429df8e7df1dad6f07a428f5b56d75d33d4afb0eac1bdbf705dac4934f8a65dfad083"
+  },
+  {
+   "chunk": "pHYs",
+   "hex": "00000b1300000b1301"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "workflow",
+   "json": {
+    "id": "00000000-0000-0000-0000-000000000000",
+    "revision": 0,
+    "last_node_id": 34,
+    "last_link_id": 56,
+    "nodes": [
+     {
+      "id": 2,
+      "type": "CLIPSetLastLayer",
+      "pos": [
+       793.4274819448018,
+       -568.5236870501996
+      ],
+      "size": [
+       270,
+       58
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 4,
+      "mode": 4,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 1
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         49
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CLIPSetLastLayer",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "stop_at_clip_layer": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       -2
+      ]
+     },
+     {
+      "id": 7,
+      "type": "VAEDecode",
+      "pos": [
+       2429.0188480009856,
+       -499.9037997168117
+      ],
+      "size": [
+       140,
+       46
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "samples",
+        "type": "LATENT",
+        "link": 9
+       },
+       {
+        "name": "vae",
+        "type": "VAE",
+        "link": 56
+       }
+      ],
+      "outputs": [
+       {
+        "name": "IMAGE",
+        "type": "IMAGE",
+        "links": [
+         55
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "VAEDecode",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": []
+     },
+     {
+      "id": 6,
+      "type": "EmptyLatentImage",
+      "pos": [
+       795.8266088283581,
+       -467.17217089870104
+      ],
+      "size": [
+       270,
+       106
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "width",
+        "type": "INT",
+        "widget": {
+         "name": "width"
+        },
+        "link": 34
+       },
+       {
+        "name": "height",
+        "type": "INT",
+        "widget": {
+         "name": "height"
+        },
+        "link": 35
+       }
+      ],
+      "outputs": [
+       {
+        "name": "LATENT",
+        "type": "LATENT",
+        "links": [
+         7
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "EmptyLatentImage",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "width": true,
+         "height": true,
+         "batch_size": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       1216,
+       768,
+       1
+      ]
+     },
+     {
+      "id": 31,
+      "type": "Note",
+      "pos": [
+       780.6538578888477,
+       745.604990501052
+      ],
+      "size": [
+       350.6846256291775,
+       88
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "version": "7.5.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "(realistic),  \n\n\nmasterpiece, high score, great score, absurdres,\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+     },
+     {
+      "id": 34,
+      "type": "SaveImage",
+      "pos": [
+       2020.2428633013876,
+       -41.61247129719062
+      ],
+      "size": [
+       613.351831345964,
+       827.3724690399674
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "images",
+        "type": "IMAGE",
+        "link": 55
+       }
+      ],
+      "outputs": [],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.16.4"
+      },
+      "widgets_values": [
+       "%date:yyyyMM%/%date:yyyyMMdd%/%date:yyyyMMddhhmmss%"
+      ]
+     },
+     {
+      "id": 33,
+      "type": "VAELoader",
+      "pos": [
+       801.4381326458019,
+       -155.41097511707284
+      ],
+      "size": [
+       270,
+       58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+       {
+        "name": "VAE",
+        "type": "VAE",
+        "links": []
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.16.4",
+       "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+       "animagine_vae.safetensors"
+      ]
+     },
+     {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [
+       800.5845585325293,
+       -313.29728060224676
+      ],
+      "size": [
+       270,
+       98
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+       {
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         50
+        ]
+       },
+       {
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         1
+        ]
+       },
+       {
+        "name": "VAE",
+        "type": "VAE",
+        "links": [
+         56
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CheckpointLoaderSimple",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "ckpt_name": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "animagine_xl_v4.safetensors"
+      ]
+     },
+     {
+      "id": 21,
+      "type": "Power Lora Loader (rgthree)",
+      "pos": [
+       1174.1894445523074,
+       -471.8307344714834
+      ],
+      "size": [
+       746.8105600457405,
+       307.3443707084534
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+       {
+        "dir": 3,
+        "name": "model",
+        "shape": 7,
+        "type": "MODEL",
+        "link": 50
+       },
+       {
+        "dir": 3,
+        "name": "clip",
+        "shape": 7,
+        "type": "CLIP",
+        "link": 49
+       }
+      ],
+      "outputs": [
+       {
+        "dir": 4,
+        "name": "MODEL",
+        "type": "MODEL",
+        "links": [
+         53
+        ]
+       },
+       {
+        "dir": 4,
+        "name": "CLIP",
+        "type": "CLIP",
+        "links": [
+         51,
+         52
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "rgthree-comfy",
+       "ver": "1.0.2512112053",
+       "Show Strengths": "Single Strength",
+       "Node name for S&R": "Power Lora Loader (rgthree)",
+       "ue_properties": {
+        "widget_ue_connectable": {},
+        "input_ue_unconnectable": {},
+        "version": "7.5.1"
+       }
+      },
+      "widgets_values": [
+       {},
+       {
+        "type": "PowerLoraLoaderHeaderWidget"
+       },
+       {
+        "on": false,
+        "lora": "sdxl\\jp_girl_xl.safetensors",
+        "strength": 0.3,
+        "strengthTwo": null
+       },
+       {
+        "on": false,
+        "lora": "sdxl\\epic_fantasy_xl.safetensors",
+        "strength": 0.5,
+        "strengthTwo": null
+       },
+       {
+        "on": false,
+        "lora": "sdxl\\omg_duchaiten_xl.safetensors",
+        "strength": 0.5,
+        "strengthTwo": null
+       },
+       {
+        "on": false,
+        "lora": "sdxl\\medieval_japan_muromachi86_xl.safetensors",
+        "strength": 1,
+        "strengthTwo": null
+       },
+       {
+        "on": false,
+        "lora": "sdxl\\perfection_style_xl_perfection.safetensors",
+        "strength": 1,
+        "strengthTwo": null
+       },
+       {},
+       ""
+      ]
+     },
+     {
+      "id": 4,
+      "type": "CLIPTextEncode",
+      "pos": [
+       1184.4930455534463,
+       631.3712952839124
+      ],
+      "size": [
+       768.6386408107212,
+       139.53988395307238
+      ],
+      "flags": {
+       "collapsed": false
+      },
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 52
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CONDITIONING",
+        "type": "CONDITIONING",
+        "links": [
+         6
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CLIPTextEncode",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "text": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "// (embedding:cyber_realistic_xl_neg), \nlowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry,\n\n// curly hair,wavy hair, messy hair,frizzy hair,\n"
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+     },
+     {
+      "id": 5,
+      "type": "KSampler",
+      "pos": [
+       2023.2653048577506,
+       -500.56507046776403
+      ],
+      "size": [
+       331.55088099372733,
+       274.3049755398928
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "model",
+        "type": "MODEL",
+        "link": 53
+       },
+       {
+        "name": "positive",
+        "type": "CONDITIONING",
+        "link": 5
+       },
+       {
+        "name": "negative",
+        "type": "CONDITIONING",
+        "link": 6
+       },
+       {
+        "name": "latent_image",
+        "type": "LATENT",
+        "link": 7
+       }
+      ],
+      "outputs": [
+       {
+        "name": "LATENT",
+        "type": "LATENT",
+        "links": [
+         9
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "KSampler",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "seed": true,
+         "steps": true,
+         "cfg": true,
+         "sampler_name": true,
+         "scheduler": true,
+         "denoise": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       811029018103755,
+       "randomize",
+       28,
+       5,
+       "euler",
+       "beta",
+       1
+      ]
+     },
+     {
+      "id": 16,
+      "type": "ResolutionMaster",
+      "pos": [
+       785.0420731335379,
+       2.143581840597048
+      ],
+      "size": [
+       330,
+       680
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "input_image",
+        "shape": 7,
+        "type": "IMAGE",
+        "link": null
+       }
+      ],
+      "outputs": [
+       {
+        "name": "",
+        "type": "INT",
+        "links": [
+         34
+        ]
+       },
+       {
+        "name": "",
+        "type": "INT",
+        "links": [
+         35
+        ]
+       },
+       {
+        "name": "",
+        "type": "FLOAT",
+        "links": null
+       },
+       {
+        "name": "",
+        "type": "INT",
+        "links": null
+       },
+       {
+        "name": "",
+        "type": "LATENT",
+        "links": null
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfyui-resolution-master",
+       "ver": "1.4.7",
+       "Node name for S&R": "ResolutionMaster",
+       "mode": "Manual",
+       "valueX": 832,
+       "valueY": 1216,
+       "canvas_min_x": 0,
+       "canvas_max_x": 2048,
+       "canvas_step_x": 64,
+       "canvas_min_y": 0,
+       "canvas_max_y": 2048,
+       "canvas_step_y": 64,
+       "canvas_decimals_x": 0,
+       "canvas_decimals_y": 0,
+       "canvas_snap": true,
+       "canvas_dots": true,
+       "canvas_frame": true,
+       "action_slider_snap_min": 16,
+       "action_slider_snap_max": 256,
+       "action_slider_snap_step": 16,
+       "scaling_slider_min": 0.1,
+       "scaling_slider_max": 4,
+       "scaling_slider_step": 0.1,
+       "megapixels_slider_min": 0.5,
+       "megapixels_slider_max": 6,
+       "megapixels_slider_step": 0.1,
+       "snapValue": 16,
+       "upscaleValue": 1.5,
+       "targetResolution": 720,
+       "targetMegapixels": 2.6,
+       "rescaleMode": "manual",
+       "rescaleValue": 1.5,
+       "autoDetect": false,
+       "autoFitOnChange": false,
+       "autoResizeOnChange": false,
+       "selectedCategory": "SDXL",
+       "selectedPreset": "13:19 Portrait",
+       "useCustomCalc": false,
+       "manual_slider_min_w": 64,
+       "manual_slider_max_w": 2048,
+       "manual_slider_step_w": 64,
+       "manual_slider_min_h": 64,
+       "manual_slider_max_h": 2048,
+       "manual_slider_step_h": 64,
+       "section_actions_collapsed": false,
+       "section_scaling_collapsed": false,
+       "section_autoDetect_collapsed": false,
+       "section_presets_collapsed": false,
+       "dropdown_resolution_expanded": false,
+       "dropdown_category_expanded": false,
+       "dropdown_preset_expanded": false,
+       "preset_selector_mode": "visual",
+       "batch_size": 1,
+       "customPresetsJSON": "",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "mode": true,
+         "width": true,
+         "height": true,
+         "auto_detect": true,
+         "rescale_mode": true,
+         "rescale_value": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "Manual",
+       832,
+       1216,
+       false,
+       "manual",
+       1.5
+      ]
+     },
+     {
+      "id": 3,
+      "type": "CLIPTextEncode",
+      "pos": [
+       1179.7169561050969,
+       -45.496997360417524
+      ],
+      "size": [
+       775.8997522204231,
+       625.4298338442874
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "clip",
+        "type": "CLIP",
+        "link": 51
+       }
+      ],
+      "outputs": [
+       {
+        "name": "CONDITIONING",
+        "type": "CONDITIONING",
+        "links": [
+         5
+        ]
+       }
+      ],
+      "properties": {
+       "cnr_id": "comfy-core",
+       "ver": "0.3.65",
+       "Node name for S&R": "CLIPTextEncode",
+       "ue_properties": {
+        "widget_ue_connectable": {
+         "text": true
+        },
+        "version": "7.4.1",
+        "input_ue_unconnectable": {}
+       }
+      },
+      "widgets_values": [
+       "(realistic),\n\nA cloaked figure, hooded and faceless, stands alone in pouring rain outside a crumbling gothic castle, gripping a flickering lantern as mist curls around mossy stone towers under a bruised twilight sky streaked by crows and skeletal trees.\nsolo, holding, standing, outdoors, sky, hood, from behind, water, tree, night, bird, building, 1other, scenery, hood up, rain, robe, facing away, dark, architecture, house, lamppost, bare tree, castle, ambiguous gender, crow, tower, fog, church, holding lantern,\n\nmasterpiece, high score, great score, absurdres\n"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+     }
+    ],
+    "links": [
+     [
+      1,
+      1,
+      1,
+      2,
+      0,
+      "CLIP"
+     ],
+     [
+      5,
+      3,
+      0,
+      5,
+      1,
+      "CONDITIONING"
+     ],
+     [
+      6,
+      4,
+      0,
+      5,
+      2,
+      "CONDITIONING"
+     ],
+     [
+      7,
+      6,
+      0,
+      5,
+      3,
+      "LATENT"
+     ],
+     [
+      9,
+      5,
+      0,
+      7,
+      0,
+      "LATENT"
+     ],
+     [
+      34,
+      16,
+      0,
+      6,
+      0,
+      "INT"
+     ],
+     [
+      35,
+      16,
+      1,
+      6,
+      1,
+      "INT"
+     ],
+     [
+      49,
+      2,
+      0,
+      21,
+      1,
+      "CLIP"
+     ],
+     [
+      50,
+      1,
+      0,
+      21,
+      0,
+      "MODEL"
+     ],
+     [
+      51,
+      21,
+      1,
+      3,
+      0,
+      "CLIP"
+     ],
+     [
+      52,
+      21,
+      1,
+      4,
+      0,
+      "CLIP"
+     ],
+     [
+      53,
+      21,
+      0,
+      5,
+      0,
+      "MODEL"
+     ],
+     [
+      55,
+      7,
+      0,
+      34,
+      0,
+      "IMAGE"
+     ],
+     [
+      56,
+      1,
+      2,
+      7,
+      1,
+      "VAE"
+     ]
+    ],
+    "groups": [
+     {
+      "id": 1,
+      "title": "prompt",
+      "bounding": [
+       1164.2826781031238,
+       -137.68232381613183,
+       818.2525920560529,
+       931.6078871502517
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+     },
+     {
+      "id": 2,
+      "title": "model",
+      "bounding": [
+       783.4274819448018,
+       -642.1236870501997,
+       330.1251900893599,
+       575.6180941523569
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+     }
+    ],
+    "config": {},
+    "extra": {
+     "ds": {
+      "scale": 1.3513057093120118,
+      "offset": [
+       -1390.1144395985093,
+       319.9219072496543
+      ]
+     },
+     "workflowRendererVersion": "LG",
+     "ue_links": [],
+     "links_added_by_ue": [],
+     "frontendVersion": "1.39.19"
+    },
+    "version": 0.4
+   }
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "ckpt_name": "animagine_xl_v4.safetensors"
+     },
+     "class_type": "CheckpointLoaderSimple",
+     "_meta": {
+      "title": "Load Checkpoint"
+     }
+    },
+    "3": {
+     "inputs": {
+      "text": "(realistic),\n\nA cloaked figure, hooded and faceless, stands alone in pouring rain outside a crumbling gothic castle, gripping a flickering lantern as mist curls around mossy stone towers under a bruised twilight sky streaked by crows and skeletal trees.\nsolo, holding, standing, outdoors, sky, hood, from behind, water, tree, night, bird, building, 1other, scenery, hood up, rain, robe, facing away, dark, architecture, house, lamppost, bare tree, castle, ambiguous gender, crow, tower, fog, church, holding lantern,\n\nmasterpiece, high score, great score, absurdres\n",
+      "clip": [
+       "21",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode",
+     "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+     }
+    },
+    "4": {
+     "inputs": {
+      "text": "\nlowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry,\n\n\n",
+      "clip": [
+       "21",
+       1
+      ]
+     },
+     "class_type": "CLIPTextEncode",
+     "_meta": {
+      "title": "CLIP Text Encode (Prompt)"
+     }
+    },
+    "5": {
+     "inputs": {
+      "seed": 811029018103755,
+      "steps": 28,
+      "cfg": 5.0,
+      "sampler_name": "euler",
+      "scheduler": "beta",
+      "denoise": 1.0,
+      "model": [
+       "21",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "4",
+       0
+      ],
+      "latent_image": [
+       "6",
+       0
+      ]
+     },
+     "class_type": "KSampler",
+     "_meta": {
+      "title": "KSampler"
+     }
+    },
+    "6": {
+     "inputs": {
+      "width": [
+       "16",
+       0
+      ],
+      "height": [
+       "16",
+       1
+      ],
+      "batch_size": 1
+     },
+     "class_type": "EmptyLatentImage",
+     "_meta": {
+      "title": "Empty Latent Image"
+     }
+    },
+    "7": {
+     "inputs": {
+      "samples": [
+       "5",
+       0
+      ],
+      "vae": [
+       "1",
+       2
+      ]
+     },
+     "class_type": "VAEDecode",
+     "_meta": {
+      "title": "VAE Decode"
+     }
+    },
+    "16": {
+     "inputs": {
+      "mode": "Manual",
+      "width": 832,
+      "height": 1216,
+      "auto_detect": false,
+      "rescale_mode": "manual",
+      "rescale_value": 1.5
+     },
+     "class_type": "ResolutionMaster",
+     "_meta": {
+      "title": "Resolution Master"
+     }
+    },
+    "21": {
+     "inputs": {
+      "PowerLoraLoaderHeaderWidget": {
+       "type": "PowerLoraLoaderHeaderWidget"
+      },
+      "lora_1": {
+       "on": false,
+       "lora": "sdxl\\jp_girl_xl.safetensors",
+       "strength": 0.3
+      },
+      "lora_2": {
+       "on": false,
+       "lora": "sdxl\\epic_fantasy_xl.safetensors",
+       "strength": 0.5
+      },
+      "lora_3": {
+       "on": false,
+       "lora": "sdxl\\omg_duchaiten_xl.safetensors",
+       "strength": 0.5
+      },
+      "lora_4": {
+       "on": false,
+       "lora": "sdxl\\medieval_japan_muromachi86_xl.safetensors",
+       "strength": 1
+      },
+      "lora_5": {
+       "on": false,
+       "lora": "sdxl\\perfection_style_xl_perfection.safetensors",
+       "strength": 1
+      },
+      "➕ Add Lora": "",
+      "model": [
+       "1",
+       0
+      ],
+      "clip": [
+       "1",
+       1
+      ]
+     },
+     "class_type": "Power Lora Loader (rgthree)",
+     "_meta": {
+      "title": "Power Lora Loader (rgthree)"
+     }
+    },
+    "33": {
+     "inputs": {
+      "vae_name": "animagine_vae.safetensors"
+     },
+     "class_type": "VAELoader",
+     "_meta": {
+      "title": "Load VAE"
+     }
+    },
+    "34": {
+     "inputs": {
+      "filename_prefix": "202604/20260414/20260414222503",
+      "images": [
+       "7",
+       0
+      ]
+     },
+     "class_type": "SaveImage",
+     "_meta": {
+      "title": "Save Image"
+     }
+    }
+   }
+  },
+  {
+   "chunk": "eXIf",
+   "hex": "49492a000800000006001201030001000000010000001a01050001000000560000001b010500010000005e0000002801030001000000020000001302030001000000010000006987040001000000660000000000000048000000010000004800000001000000060000900700040000003032313001910700040000000102030000a00700040000003031303001a0030001000000ffff000002a00400010000004003000003a0040001000000c004000000000000"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "workflow",
+   "generator": "comfyui",
+   "prompt": "(realistic),\n\nA cloaked figure, hooded and faceless, stands alone in pouring rain outside a crumbling gothic castle, gripping a flickering lantern as mist curls around mossy stone towers under a bruised twilight sky streaked by crows and skeletal trees.\nsolo, holding, standing, outdoors, sky, hood, from behind, water, tree, night, bird, building, 1other, scenery, hood up, rain, robe, facing away, dark, architecture, house, lamppost, bare tree, castle, ambiguous gender, crow, tower, fog, church, holding lantern,\n\nmasterpiece, high score, great score, absurdres | // (embedding:cyber_realistic_xl_neg), \nlowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry,\n\n// curly hair,wavy hair, messy hair,frizzy hair,",
+   "model": "animagine_xl_v4.safetensors",
+   "positive_prompt": "(realistic),\n\nA cloaked figure, hooded and faceless, stands alone in pouring rain outside a crumbling gothic castle, gripping a flickering lantern as mist curls around mossy stone towers under a bruised twilight sky streaked by crows and skeletal trees.\nsolo, holding, standing, outdoors, sky, hood, from behind, water, tree, night, bird, building, 1other, scenery, hood up, rain, robe, facing away, dark, architecture, house, lamppost, bare tree, castle, ambiguous gender, crow, tower, fog, church, holding lantern,\n\nmasterpiece, high score, great score, absurdres",
+   "negative_prompt": "// (embedding:cyber_realistic_xl_neg), \nlowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry,\n\n// curly hair,wavy hair, messy hair,frizzy hair,"
+  },
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "(realistic),\n\nA cloaked figure, hooded and faceless, stands alone in pouring rain outside a crumbling gothic castle, gripping a flickering lantern as mist curls around mossy stone towers under a bruised twilight sky streaked by crows and skeletal trees.\nsolo, holding, standing, outdoors, sky, hood, from behind, water, tree, night, bird, building, 1other, scenery, hood up, rain, robe, facing away, dark, architecture, house, lamppost, bare tree, castle, ambiguous gender, crow, tower, fog, church, holding lantern,\n\nmasterpiece, high score, great score, absurdres | lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry,",
+   "model": "animagine_xl_v4.safetensors",
+   "positive_prompt": "(realistic),\n\nA cloaked figure, hooded and faceless, stands alone in pouring rain outside a crumbling gothic castle, gripping a flickering lantern as mist curls around mossy stone towers under a bruised twilight sky streaked by crows and skeletal trees.\nsolo, holding, standing, outdoors, sky, hood, from behind, water, tree, night, bird, building, 1other, scenery, hood up, rain, robe, facing away, dark, architecture, house, lamppost, bare tree, castle, ambiguous gender, crow, tower, fog, church, holding lantern,\n\nmasterpiece, high score, great score, absurdres",
+   "negative_prompt": "lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry,"
+  }
+ ]
+}

@@ -1,0 +1,36 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "empty Model value",
+  "unterminated <lora: tag",
+  "ASCII charset in big-endian TIFF",
+  "EXIF chunk with Exif header"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": true,
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "ASCII",
+    "text": "a field of sunflowers <lora:sunny_day:0.7> <lora:unclosed\nSteps: 20, Model: , Size: 512x512"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a field of sunflowers <lora:sunny_day:0.7> <lora:unclosed\nSteps: 20, Model: , Size: 512x512",
+   "loras": [
+    {
+     "name": "sunny_day",
+     "weight": "0.7"
+    }
+   ],
+   "positive_prompt": "a field of sunflowers <lora:sunny_day:0.7> <lora:unclosed"
+  }
+ ]
+}

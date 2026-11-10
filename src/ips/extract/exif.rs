@@ -1,14 +1,24 @@
 const TAG_EXIF_IFD: u16 = 0x8769;
 const TAG_USER_COMMENT: u16 = 0x9286;
+const TYPE_ASCII: u16 = 2;
 const EXIF_PREFIX: &[u8] = b"Exif\0\0";
 
+fn tiff_data(data: &[u8]) -> &[u8] {
+    data.strip_prefix(EXIF_PREFIX).unwrap_or(data)
+}
+
 pub fn extract_user_comment(data: &[u8]) -> Option<String> {
-    let tiff = if data.starts_with(EXIF_PREFIX) {
-        &data[EXIF_PREFIX.len()..]
-    } else {
-        data
-    };
-    ExifReader::new(tiff)?.user_comment()
+    ExifReader::new(tiff_data(data))?.user_comment()
+}
+
+/// ComfyUI's WebP (and AVIF) savers store each graph in an IFD0 ASCII tag as `key:{json}`:
+/// Model (0x0110) holds `prompt:…`, Make (0x010F) `workflow:…`. Returns `(key, json text)`
+/// for the `prompt` and `workflow` keys, in tag order. A value cut short by the end of the
+/// data is returned as far as it goes.
+pub fn extract_comfyui_tags(data: &[u8]) -> Vec<(&'static str, String)> {
+    ExifReader::new(tiff_data(data))
+        .and_then(|reader| reader.comfyui_tags())
+        .unwrap_or_default()
 }
 
 struct ExifReader<'a> {
@@ -46,6 +56,36 @@ impl<'a> ExifReader<'a> {
         self.scan_ifd(ifd0, 0)
     }
 
+    fn comfyui_tags(&self) -> Option<Vec<(&'static str, String)>> {
+        let ifd0 = self.u32(4)? as usize;
+        let entry_count = self.u16(ifd0)? as usize;
+        let mut tags = Vec::new();
+        for i in 0..entry_count {
+            let e = ifd0 + 2 + i * 12;
+            if e + 12 > self.data.len() {
+                break;
+            }
+            if self.u16(e + 2)? != TYPE_ASCII {
+                continue;
+            }
+            let count = self.u32(e + 4)? as usize;
+            let offset = if count <= 4 { e + 8 } else { self.u32(e + 8)? as usize };
+            let Some(rest) = self.data.get(offset..) else {
+                continue;
+            };
+            let text = String::from_utf8_lossy(&rest[..count.min(rest.len())]);
+            if let Some((key, json)) = text.trim_end_matches('\0').split_once(':') {
+                let key = match key {
+                    "prompt" => "prompt",
+                    "workflow" => "workflow",
+                    _ => continue,
+                };
+                tags.push((key, json.to_string()));
+            }
+        }
+        Some(tags)
+    }
+
     fn scan_ifd(&self, offset: usize, depth: u8) -> Option<String> {
         if depth > 4 {
             return None;
@@ -65,7 +105,8 @@ impl<'a> ExifReader<'a> {
 
             match tag {
                 TAG_USER_COMMENT => {
-                    let val_off = self.u32(e + 8)? as usize;
+                    // Values of up to 4 bytes are stored in the entry itself.
+                    let val_off = if count <= 4 { e + 8 } else { self.u32(e + 8)? as usize };
                     if let Some(text) = self.decode_user_comment(val_off, count) {
                         return Some(text);
                     }
@@ -89,37 +130,36 @@ impl<'a> ExifReader<'a> {
             return None;
         }
         let count = count.min(self.data.len() - offset);
-        if count < 8 {
-            return None;
-        }
-        let charset = &self.data[offset..offset + 8];
-        let body = &self.data[offset + 8..offset + count];
+        let value = &self.data[offset..offset + count];
 
-        let text = match charset {
-            b"ASCII\0\0\0" => String::from_utf8_lossy(body)
-                .trim_matches('\0')
-                .trim()
-                .to_string(),
-            b"UNICODE\0" => decode_utf16(body, self.le),
-            _ => String::from_utf8_lossy(body)
-                .trim_matches('\0')
-                .trim()
-                .to_string(),
+        // The 8-byte character code is optional in practice: Pillow and ComfyUI JPEG savers
+        // store a plain string, which must keep its first 8 bytes.
+        let text = match value.get(..8) {
+            Some(b"UNICODE\0") => decode_utf16(&value[8..], self.le),
+            Some(b"ASCII\0\0\0") | Some(b"JIS\0\0\0\0\0") | Some(b"\0\0\0\0\0\0\0\0") => {
+                String::from_utf8_lossy(&value[8..]).into_owned()
+            }
+            _ => String::from_utf8_lossy(value).into_owned(),
         };
 
-        if text.is_empty() { None } else { Some(text) }
+        let text = text.trim_matches('\0').trim();
+        if text.is_empty() {
+            None
+        } else {
+            Some(text.to_string())
+        }
     }
 }
 
+/// Decode EXIF "UNICODE" text. A BOM decides the byte order; otherwise the order is guessed
+/// from where the zero bytes of ASCII characters fall, because writers disagree (piexif and
+/// most ComfyUI savers always write big-endian, even inside little-endian TIFF), and the
+/// TIFF byte order is only the fallback.
 fn decode_utf16(bytes: &[u8], tiff_le: bool) -> String {
-    if bytes.len() < 2 {
-        return String::new();
-    }
-
     let (le, data) = match bytes.get(0..2) {
         Some(&[0xFF, 0xFE]) => (true, &bytes[2..]),
         Some(&[0xFE, 0xFF]) => (false, &bytes[2..]),
-        _ => (tiff_le, bytes),
+        _ => (guess_utf16_le(bytes).unwrap_or(tiff_le), bytes),
     };
 
     let words: Vec<u16> = data
@@ -132,9 +172,21 @@ fn decode_utf16(bytes: &[u8], tiff_le: bool) -> String {
         .collect();
 
     String::from_utf16_lossy(&words)
-        .trim_matches('\0')
-        .trim()
-        .to_string()
+}
+
+/// `Some(true)` for little-endian, `Some(false)` for big-endian, `None` when the bytes give
+/// no hint (no zero bytes, as in text without any ASCII).
+fn guess_utf16_le(bytes: &[u8]) -> Option<bool> {
+    let (mut even, mut odd) = (0usize, 0usize);
+    for pair in bytes.chunks_exact(2) {
+        even += usize::from(pair[0] == 0);
+        odd += usize::from(pair[1] == 0);
+    }
+    match even.cmp(&odd) {
+        std::cmp::Ordering::Greater => Some(false),
+        std::cmp::Ordering::Less => Some(true),
+        std::cmp::Ordering::Equal => None,
+    }
 }
 
 fn read_u16(data: &[u8], off: usize, le: bool) -> Option<u16> {

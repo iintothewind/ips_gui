@@ -1,0 +1,45 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "TIFF too short, bad byte order, bad magic",
+  "IFD/entry/value offsets past the end",
+  "self-referencing Exif IFD",
+  "ASCII tag value offset past the end"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "hex": "4949"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "58582a0008000000"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "49492b0008000000"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "49492a00ffff0000"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "49492a0008000000050000000000"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "49492a000800000001008692070064000000ffff000000000000"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "49492a0008000000010069870400010000000800000000000000"
+  },
+  {
+   "chunk": "EXIF",
+   "hex": "49492a000800000001001001020014000000ffff000000000000"
+  }
+ ],
+ "expected": []
+}

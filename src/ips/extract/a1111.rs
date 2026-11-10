@@ -9,7 +9,7 @@ pub fn extract_details(text: &str) -> PromptDetails {
     let (positive, negative, settings) = split_prompts_and_settings(trimmed);
 
     PromptDetails {
-        model: parse_setting(settings.unwrap_or(trimmed), "Model"),
+        model: parse_model(settings.unwrap_or(trimmed)),
         loras: parse_loras(trimmed),
         positive_prompt: non_empty(positive),
         negative_prompt: non_empty(negative),
@@ -44,15 +44,37 @@ fn find_line_marker(text: &str, marker: &str) -> Option<usize> {
         return Some(0);
     }
 
-    text.find(&format!("\n{marker}")).map(|idx| idx + 1)
+    let needle = format!("\n{marker}");
+    text.find(&needle).map(|idx| idx + 1)
 }
 
-fn parse_setting(text: &str, key: &str) -> Option<String> {
-    let marker = format!("{key}:");
-    let start = text.find(&marker)? + marker.len();
-    let rest = text[start..].trim_start();
-    let end = rest.find([',', '\n', '\r']).unwrap_or(rest.len());
-    non_empty(rest[..end].trim())
+/// Parse the checkpoint model name, avoiding false matches on "Model hash:".
+fn parse_model(text: &str) -> Option<String> {
+    for needle in [", Model:", "\nModel:", "Model:"] {
+        let Some(idx) = text.find(needle) else {
+            continue;
+        };
+        if needle == "Model:" && text[idx..].starts_with("Model hash:") {
+            continue;
+        }
+
+        let rest = text[idx + needle.len()..].trim_start();
+        if rest.starts_with('"') {
+            let inner = &rest[1..];
+            let end = inner.find('"')?;
+            if let Some(model) = non_empty(inner[..end].trim()) {
+                return Some(model);
+            }
+            continue;
+        }
+
+        let end = rest.find([',', '\n', '\r']).unwrap_or(rest.len());
+        if let Some(model) = non_empty(rest[..end].trim()) {
+            return Some(model);
+        }
+    }
+
+    None
 }
 
 fn parse_loras(text: &str) -> Vec<LoraInfo> {
@@ -100,11 +122,41 @@ mod tests {
         let text = "masterpiece, <lora:detail:0.7>\nNegative prompt: blurry\nSteps: 30, Model: base.safetensors, Seed: 1";
         let details = extract_details(text);
 
-        assert_eq!(details.positive_prompt.as_deref(), Some("masterpiece, <lora:detail:0.7>"));
+        assert_eq!(
+            details.positive_prompt.as_deref(),
+            Some("masterpiece, <lora:detail:0.7>")
+        );
         assert_eq!(details.negative_prompt.as_deref(), Some("blurry"));
         assert_eq!(details.model.as_deref(), Some("base.safetensors"));
         assert_eq!(details.loras[0].name, "detail");
         assert_eq!(details.loras[0].weight, "0.7");
+    }
+
+    #[test]
+    fn model_stops_at_comma_not_later_quote() {
+        let text = "pos\nNegative prompt: neg\nSteps: 20, Model: DuchaitenPonyReal_v20, Denoising strength: 0.6, Clip skip: 2, Lora hashes: \"abc\"";
+        let details = extract_details(text);
+        assert_eq!(details.model.as_deref(), Some("DuchaitenPonyReal_v20"));
+    }
+
+    #[test]
+    fn model_supports_quoted_value() {
+        let text = "pos\nSteps: 20, Model: \"PlantMilkModelSuite_almond.safetensors\", Seed: 1";
+        let details = extract_details(text);
+        assert_eq!(
+            details.model.as_deref(),
+            Some("PlantMilkModelSuite_almond.safetensors")
+        );
+    }
+
+    #[test]
+    fn model_skips_model_hash_field() {
+        let text = "pos\nNegative prompt: neg\nSteps: 34, Model hash: 24f68a5155, Model: PlantMilkModelSuite_almond, Clip skip: 2";
+        let details = extract_details(text);
+        assert_eq!(
+            details.model.as_deref(),
+            Some("PlantMilkModelSuite_almond")
+        );
     }
 
     #[test]

@@ -1,0 +1,32 @@
+{
+ "origin": "content/comfy/202602/20260202/20260202221351.webp",
+ "covers": [
+  "a1:model",
+  "a1:model-hash",
+  "a1:steps",
+  "family:qwen",
+  "webp-exif:UNICODE:MM"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": false,
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "be",
+    "text": "\nSteps: 8, Sampler: Euler a_beta, CFG scale: 1.0, Seed: 893812171873753, Clip skip: 1, Model: qwen_aio_v23.safetensors, Model hash: fdb919fc81, Hashes: {\"model\": \"fdb919fc81\"}"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "Steps: 8, Sampler: Euler a_beta, CFG scale: 1.0, Seed: 893812171873753, Clip skip: 1, Model: qwen_aio_v23.safetensors, Model hash: fdb919fc81, Hashes: {\"model\": \"fdb919fc81\"}",
+   "model": "qwen_aio_v23.safetensors"
+  }
+ ]
+}

@@ -1,0 +1,22 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "XMP dc:description",
+  "InvokeAI namespace → invokeai"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "XMP",
+   "text": "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"><rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"><rdf:Description xmlns:invokeai=\"http://invoke.ai/\" invokeai:model=\"dreamshaper_8\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">a stained glass window of a whale</rdf:li></rdf:Alt></dc:description></rdf:Description></rdf:RDF></x:xmpmeta>"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "XMP",
+   "generator": "invokeai",
+   "prompt": "a stained glass window of a whale",
+   "positive_prompt": "a stained glass window of a whale"
+  }
+ ]
+}

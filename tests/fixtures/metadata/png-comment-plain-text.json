@@ -1,0 +1,23 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "Comment non-JSON → unknown",
+  "tEXt Latin-1 (non-ASCII byte)"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "Comment",
+   "text": "sunset over a quiet harbor, café lights"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "Comment",
+   "generator": "unknown",
+   "prompt": "sunset over a quiet harbor, café lights",
+   "positive_prompt": "sunset over a quiet harbor, café lights"
+  }
+ ]
+}

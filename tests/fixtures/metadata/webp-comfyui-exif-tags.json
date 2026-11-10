@@ -1,0 +1,49 @@
+{
+ "origin": "generated: ComfyUI _create_webp_metadata + save_animated_webp (comfy_api/latest/_ui.py) reproduced with Pillow 10.2.0",
+ "covers": [
+  "ComfyUI SaveAnimatedWEBP: prompt:{…} in Model (0x0110), workflow:{…} in Make (0x010F)",
+  "extra_pnginfo key other than workflow (0x010E) ignored",
+  "Python NaN in the prompt JSON",
+  "EXIF chunk with Exif header, big-endian TIFF"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": true,
+   "byte_order": "MM",
+   "ifd0_ascii": [
+    {
+     "tag": "0x010E",
+     "text": "notes:{\"author\": \"ips fixture\"}"
+    },
+    {
+     "tag": "0x010F",
+     "text": "workflow:{\"last_node_id\": 7, \"last_link_id\": 5, \"nodes\": [{\"id\": 4, \"type\": \"CheckpointLoaderSimple\", \"mode\": 0, \"widgets_values\": [\"sd_xl_base_1.0.safetensors\"]}, {\"id\": 6, \"type\": \"CLIPTextEncode\", \"mode\": 0, \"inputs\": [{\"name\": \"clip\", \"type\": \"CLIP\", \"link\": 1}], \"widgets_values\": [\"a hot air balloon over green hills, morning light\"]}, {\"id\": 7, \"type\": \"CLIPTextEncode\", \"mode\": 0, \"inputs\": [{\"name\": \"clip\", \"type\": \"CLIP\", \"link\": 2}], \"widgets_values\": [\"blurry, text\"]}, {\"id\": 3, \"type\": \"KSampler\", \"mode\": 0, \"inputs\": [{\"name\": \"model\", \"type\": \"MODEL\", \"link\": 3}, {\"name\": \"positive\", \"type\": \"CONDITIONING\", \"link\": 4}, {\"name\": \"negative\", \"type\": \"CONDITIONING\", \"link\": 5}], \"widgets_values\": [7, \"fixed\", 20, 7.0, \"euler\", \"normal\", 1.0]}], \"links\": [[1, 4, 1, 6, 0, \"CLIP\"], [2, 4, 1, 7, 0, \"CLIP\"], [3, 4, 0, 3, 0, \"MODEL\"], [4, 6, 0, 3, 1, \"CONDITIONING\"], [5, 7, 0, 3, 2, \"CONDITIONING\"]], \"version\": 0.4}"
+    },
+    {
+     "tag": "0x0110",
+     "text": "prompt:{\"4\": {\"inputs\": {\"ckpt_name\": \"sd_xl_base_1.0.safetensors\"}, \"class_type\": \"CheckpointLoaderSimple\"}, \"6\": {\"inputs\": {\"text\": \"a hot air balloon over green hills, morning light\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"7\": {\"inputs\": {\"text\": \"blurry, text\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"5\": {\"inputs\": {\"width\": 64, \"height\": 64, \"batch_size\": 2}, \"class_type\": \"EmptyLatentImage\"}, \"3\": {\"inputs\": {\"seed\": 7, \"steps\": 20, \"cfg\": 7.0, \"sampler_name\": \"euler\", \"scheduler\": \"normal\", \"denoise\": NaN, \"model\": [\"4\", 0], \"positive\": [\"6\", 0], \"negative\": [\"7\", 0], \"latent_image\": [\"5\", 0]}, \"class_type\": \"KSampler\"}}"
+    }
+   ]
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "workflow",
+   "generator": "comfyui",
+   "prompt": "a hot air balloon over green hills, morning light | blurry, text",
+   "model": "sd_xl_base_1.0.safetensors",
+   "positive_prompt": "a hot air balloon over green hills, morning light",
+   "negative_prompt": "blurry, text"
+  },
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a hot air balloon over green hills, morning light | blurry, text",
+   "model": "sd_xl_base_1.0.safetensors",
+   "positive_prompt": "a hot air balloon over green hills, morning light",
+   "negative_prompt": "blurry, text"
+  }
+ ]
+}

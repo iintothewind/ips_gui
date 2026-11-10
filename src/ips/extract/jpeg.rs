@@ -2,7 +2,7 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 use crate::ips::types::{Generator, PromptRecord};
-use super::{a1111, exif};
+use super::a1111;
 
 const SOI_MARKER: [u8; 2] = [0xFF, 0xD8];
 const MARKER_PREFIX: u8 = 0xFF;
@@ -80,13 +80,7 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
             COM_TYPE => {
                 let text = String::from_utf8_lossy(&body).trim().to_string();
                 if !text.is_empty() {
-                    results.push(PromptRecord::with_details(
-                        path.to_path_buf(),
-                        text.clone(),
-                        Generator::A1111,
-                        "COM",
-                        a1111::extract_details(&text),
-                    ));
+                    results.push(super::text_record(path, "COM", text, Generator::A1111, verbose));
                 }
             }
             APP1_TYPE => {
@@ -103,15 +97,7 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                         ));
                     }
                 } else if body.starts_with(EXIF_HEADER) {
-                    if let Some(prompt) = exif::extract_user_comment(&body) {
-                        results.push(PromptRecord::with_details(
-                            path.to_path_buf(),
-                            prompt.clone(),
-                            Generator::Unknown,
-                            "UserComment",
-                            a1111::extract_details(&prompt),
-                        ));
-                    }
+                    results.extend(super::exif_records(path, &body, verbose));
                 }
             }
             _ => {}

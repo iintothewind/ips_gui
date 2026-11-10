@@ -1,0 +1,85 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "ConditioningAverage conditioning_to/conditioning_from",
+  "cycle in the conditioning graph",
+  "negative chain without text"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "ckpt_name": "base.safetensors"
+     },
+     "class_type": "CheckpointLoaderSimple"
+    },
+    "2": {
+     "inputs": {
+      "conditioning_to": [
+       "3",
+       0
+      ],
+      "conditioning_from": [
+       "4",
+       0
+      ],
+      "conditioning_to_strength": 0.5
+     },
+     "class_type": "ConditioningAverage"
+    },
+    "3": {
+     "inputs": {
+      "conditioning": [
+       "2",
+       0
+      ]
+     },
+     "class_type": "ConditioningSetArea"
+    },
+    "4": {
+     "inputs": {
+      "text": "a lighthouse in fog"
+     },
+     "class_type": "CLIPTextEncode"
+    },
+    "5": {
+     "inputs": {
+      "start": 0.0,
+      "end": 1.0
+     },
+     "class_type": "ConditioningSetTimestepRange"
+    },
+    "6": {
+     "inputs": {
+      "model": [
+       "1",
+       0
+      ],
+      "positive": [
+       "2",
+       0
+      ],
+      "negative": [
+       "5",
+       0
+      ]
+     },
+     "class_type": "KSampler"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a lighthouse in fog",
+   "model": "base.safetensors",
+   "positive_prompt": "a lighthouse in fog"
+  }
+ ]
+}

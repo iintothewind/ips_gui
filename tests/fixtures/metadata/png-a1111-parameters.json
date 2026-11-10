@@ -1,0 +1,40 @@
+{
+ "origin": "content/comfy/202510/2025-10-11/00171-1983368499.png",
+ "covers": [
+  "a1:model",
+  "a1:model-hash",
+  "a1:negative",
+  "a1:steps",
+  "png:tEXt:parameters"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "PLTE",
+   "hex": "0f0b0c120c0c0f0e120806060f0a0a121013110e100f0d0f1211150b07080c090a14131714151b16171d1212171b151215100f1b1a1e1613140c0b0e241e1c241a16211712191618181a221f1e22201b1b1e18172d282829242524212329211e1b1d252b1f182f242033282319120f23242a1d212a291b14332c2b282d3637302e2729304d3b2e2b323e3221183c383a302f35452f23382c253d3c43543c2c3633363e2f27402a20463429443c3b7b5c53886a662e2c2f3a281d20273353423336251c4c3428212d3c3c35327e615a5b3e2e5a453434343c4041496244323439435c4a3a664a3683655f7257514339343f332c735348474143735c5a4f2e1e353d4c3d2217344355604e42694e492a384a704d38462819533527694e3f5b413bf2f5f74247514f4c5464453ee9f2f75f5a644a454c76543e283c542333467f5b42415f7f54545f314e6b61636d321b133a5776444c5b4e413c6757482a446087736e8b6146c9e4f056383336495e544847636c78a8846bd2e9f3e8ebef505b6f9e7c659078667e50365b352281574b6088ac8c64516e604fdef0f7dbaac9e9bbd7bee0f0d8b9d6643e286f687172727ef3edea56627c5f718899684970452e486889637c9acbaccbdde9f1e5b1d074685ba9d3e8d4beb39acbe3b2dbed7ba1c35d5257d4a0c0465266efe6e0bea0c27c6f657183a3d2b8a6527295dccabe87c1df99bbd7567fa3dee3e9c0a29470abcf708fb2a671508a573cc9ada2bf8fb1939fc18eadcc70798ea3adcaaa9fc082b3d3e3d4cabbd7e871badb95736cb584a7976e5c818196cd95b660a3cab490738394b5bbccdecaaf93b39386a9c9e0aa897c8aceeaf2c5dd6797bcebded4d4dde7c7d8e68886a69d8175b8afccc3bdd3aebdd5bc9e87977598ad91b5a083a69cd8ef5ab5dd6f6587356e9b3f7fac9790b4857c805193bec0997674c7e8856d90b78864ac7c59aa789afcfdfaceccdb6d5572cda57f2a5e89eda1c07e3e3a96919647a5d29f9fab865e7be1c6a6e394b4e0b588c17e9c398fc0d187a5e1d3e26c312eb6b1b0eed8b9a56681dd9f6ec78e62"
+  },
+  {
+   "chunk": "pHYs",
+   "hex": "00000b1300000b1301"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "parameters",
+   "text": "portrait,(8k, best quality, ultra high res, photorealistic, masterpiece, ultra-detailed, Unreal Engine), absurdres, best quality, 1girl, solo, wearing a black lace gothic dress with corset details, long flowing sleeves, standing in a candlelit cathedral, stained glass windows glowing in the background, dramatic shadows, ethereal gothic atmosphere, \nNegative prompt: (easynegative:1.8), sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, bad anatomy, (fat:1.2),bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, signature, watermark, blurry, (color block:1.5),( shape overlay:1.5), unnatural shading, (anatomical artifact:1.5), stylized anatomy, glowing skin, cartoon, anime, sketches, (worst quality), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), bad anatomy, loli, young,\nSteps: 30, Sampler: Euler a, Schedule type: Automatic, CFG scale: 7, Seed: 1983368499, Size: 640x960, Model hash: 34ef3f97d1, Model: perfectdeliberate_v20, Denoising strength: 0.5, ControlNet 0: \"Module: depth_anything, Model: diffusers_xl_depth_full [2f51180b], Weight: 1, Resize Mode: Crop and Resize, Processor Res: 512, Threshold A: 0.5, Threshold B: 0.5, Guidance Start: 0.0, Guidance End: 1.0, Pixel Perfect: True, Control Mode: Balanced, Hr Option: Both\", Hires upscale: 2, Hires upscaler: R-ESRGAN 4x+, Version: f2.0.1v1.10.1-previous-224-g90019688"
+  },
+  {
+   "chunk": "eXIf",
+   "hex": "49492a000800000006001201030001000000010000001a01050001000000560000001b010500010000005e0000002801030001000000020000001302030001000000010000006987040001000000660000000000000048000000010000004800000001000000060000900700040000003032313001910700040000000102030000a00700040000003031303001a0030001000000ffff000002a00400010000000005000003a00400010000008007000000000000"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "parameters",
+   "generator": "a1111",
+   "prompt": "portrait,(8k, best quality, ultra high res, photorealistic, masterpiece, ultra-detailed, Unreal Engine), absurdres, best quality, 1girl, solo, wearing a black lace gothic dress with corset details, long flowing sleeves, standing in a candlelit cathedral, stained glass windows glowing in the background, dramatic shadows, ethereal gothic atmosphere, \nNegative prompt: (easynegative:1.8), sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, bad anatomy, (fat:1.2),bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, signature, watermark, blurry, (color block:1.5),( shape overlay:1.5), unnatural shading, (anatomical artifact:1.5), stylized anatomy, glowing skin, cartoon, anime, sketches, (worst quality), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), bad anatomy, loli, young,\nSteps: 30, Sampler: Euler a, Schedule type: Automatic, CFG scale: 7, Seed: 1983368499, Size: 640x960, Model hash: 34ef3f97d1, Model: perfectdeliberate_v20, Denoising strength: 0.5, ControlNet 0: \"Module: depth_anything, Model: diffusers_xl_depth_full [2f51180b], Weight: 1, Resize Mode: Crop and Resize, Processor Res: 512, Threshold A: 0.5, Threshold B: 0.5, Guidance Start: 0.0, Guidance End: 1.0, Pixel Perfect: True, Control Mode: Balanced, Hr Option: Both\", Hires upscale: 2, Hires upscaler: R-ESRGAN 4x+, Version: f2.0.1v1.10.1-previous-224-g90019688",
+   "model": "perfectdeliberate_v20",
+   "positive_prompt": "portrait,(8k, best quality, ultra high res, photorealistic, masterpiece, ultra-detailed, Unreal Engine), absurdres, best quality, 1girl, solo, wearing a black lace gothic dress with corset details, long flowing sleeves, standing in a candlelit cathedral, stained glass windows glowing in the background, dramatic shadows, ethereal gothic atmosphere,",
+   "negative_prompt": "(easynegative:1.8), sketches, (worst quality:2), (low quality:2), (normal quality:2), lowres, normal quality, ((monochrome)), ((grayscale)), skin spots, acnes, skin blemishes, bad anatomy, (fat:1.2),bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, signature, watermark, blurry, (color block:1.5),( shape overlay:1.5), unnatural shading, (anatomical artifact:1.5), stylized anatomy, glowing skin, cartoon, anime, sketches, (worst quality), (low quality:2), (normal quality:2), lowres, ((monochrome)), ((grayscale)), bad anatomy, loli, young,"
+  }
+ ]
+}

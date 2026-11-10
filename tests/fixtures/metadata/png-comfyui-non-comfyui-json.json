@@ -1,0 +1,52 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "valid JSON that is not ComfyUI → no record",
+  "empty UI node list",
+  "malformed iTXt skipped",
+  "JSON array instead of an object",
+  "empty parameters text"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "prompt": "a bonsai tree on a desk"
+   }
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "workflow",
+   "json": {
+    "nodes": [],
+    "links": []
+   }
+  },
+  {
+   "chunk": "iTXt",
+   "hex": "6b7700"
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "workflow",
+   "json": [
+    1,
+    2
+   ]
+  },
+  {
+   "chunk": "tEXt",
+   "keyword": "parameters",
+   "text": ""
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "parameters",
+   "generator": "a1111",
+   "prompt": ""
+  }
+ ]
+}

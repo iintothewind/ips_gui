@@ -1,0 +1,35 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "JSON in COM that is not ComfyUI → plain text record",
+  "stray SOI marker",
+  "extended-XMP APP1 skipped",
+  "XMP with empty description"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "marker": "D8"
+  },
+  {
+   "marker": "E1",
+   "hex": "687474703a2f2f6e732e61646f62652e636f6d2f786d702f657874656e73696f6e2f00303030303030303030303030303030303030303030303030303030303030303000000010000000003c783a786d706d6574612f3e"
+  },
+  {
+   "segment": "XMP",
+   "text": "<x:xmpmeta xmlns:x=\"adobe:ns:meta/\"><rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"><rdf:Description xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:description><rdf:Alt><rdf:li xml:lang=\"x-default\">  </rdf:li></rdf:Alt></dc:description></rdf:Description></rdf:RDF></x:xmpmeta>"
+  },
+  {
+   "segment": "COM",
+   "text": "{\"prompt\": \"a bonsai tree on a desk\"}"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "COM",
+   "generator": "a1111",
+   "prompt": "{\"prompt\": \"a bonsai tree on a desk\"}",
+   "positive_prompt": "{\"prompt\": \"a bonsai tree on a desk\"}"
+  }
+ ]
+}

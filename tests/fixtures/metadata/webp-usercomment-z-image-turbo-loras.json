@@ -1,0 +1,47 @@
+{
+ "origin": "content/comfy/202601/20260124/20260124010543.webp",
+ "covers": [
+  "a1:lora-tag",
+  "a1:model",
+  "a1:model-hash",
+  "a1:negative",
+  "a1:steps",
+  "family:flux",
+  "family:z-image-turbo",
+  "webp-exif:UNICODE:MM"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": false,
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "be",
+    "text": "A racing driver in a white racing suite, holding a holding a racing helmet, standing next to a porsche 911 racing car, smiling with confidence. <lora:midjourney_luneva_cinematic_zit:0.5> <lora:instant_portrait_obbllai_zit:0.25>\nNegative prompt: A racing driver in a white racing suite, holding a holding a racing helmet, standing next to a porsche 911 racing car, smiling with confidence.\nSteps: 9, Sampler: DDIM_ddim_uniform, CFG scale: 1.0, Seed: 1054096884075440, Clip skip: 1, Model: zit_tensor_core_fp8.safetensors, Model hash: b1b285861c, VAE: flux_vae.safetensors, VAE hash: afc8e28272, Lora hashes: \"midjourney_luneva_cinematic_zit: 18401392af, instant_portrait_obbllai_zit: ae5ea92acf\", Hashes: {\"model\": \"b1b285861c\", \"vae\": \"afc8e28272\", \"lora:midjourney_luneva_cinematic_zit\": \"18401392af\", \"lora:instant_portrait_obbllai_zit\": \"ae5ea92acf\"}"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "A racing driver in a white racing suite, holding a holding a racing helmet, standing next to a porsche 911 racing car, smiling with confidence. <lora:midjourney_luneva_cinematic_zit:0.5> <lora:instant_portrait_obbllai_zit:0.25>\nNegative prompt: A racing driver in a white racing suite, holding a holding a racing helmet, standing next to a porsche 911 racing car, smiling with confidence.\nSteps: 9, Sampler: DDIM_ddim_uniform, CFG scale: 1.0, Seed: 1054096884075440, Clip skip: 1, Model: zit_tensor_core_fp8.safetensors, Model hash: b1b285861c, VAE: flux_vae.safetensors, VAE hash: afc8e28272, Lora hashes: \"midjourney_luneva_cinematic_zit: 18401392af, instant_portrait_obbllai_zit: ae5ea92acf\", Hashes: {\"model\": \"b1b285861c\", \"vae\": \"afc8e28272\", \"lora:midjourney_luneva_cinematic_zit\": \"18401392af\", \"lora:instant_portrait_obbllai_zit\": \"ae5ea92acf\"}",
+   "model": "zit_tensor_core_fp8.safetensors",
+   "loras": [
+    {
+     "name": "midjourney_luneva_cinematic_zit",
+     "weight": "0.5"
+    },
+    {
+     "name": "instant_portrait_obbllai_zit",
+     "weight": "0.25"
+    }
+   ],
+   "positive_prompt": "A racing driver in a white racing suite, holding a holding a racing helmet, standing next to a porsche 911 racing car, smiling with confidence. <lora:midjourney_luneva_cinematic_zit:0.5> <lora:instant_portrait_obbllai_zit:0.25>",
+   "negative_prompt": "A racing driver in a white racing suite, holding a holding a racing helmet, standing next to a porsche 911 racing car, smiling with confidence."
+  }
+ ]
+}

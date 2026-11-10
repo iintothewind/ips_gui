@@ -1,0 +1,34 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "JPEG COM → a1111",
+  "empty quoted Model → no model"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "COM",
+   "text": "a snowy mountain cabin at night\nNegative prompt: people\nSteps: 25, Sampler: DPM++ 2M, Model: realvis_v5"
+  },
+  {
+   "segment": "COM",
+   "text": "a lighthouse\nSteps: 10, Model: \"\""
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "COM",
+   "generator": "a1111",
+   "prompt": "a snowy mountain cabin at night\nNegative prompt: people\nSteps: 25, Sampler: DPM++ 2M, Model: realvis_v5",
+   "model": "realvis_v5",
+   "positive_prompt": "a snowy mountain cabin at night",
+   "negative_prompt": "people"
+  },
+  {
+   "metadata_key": "COM",
+   "generator": "a1111",
+   "prompt": "a lighthouse\nSteps: 10, Model: \"\"",
+   "positive_prompt": "a lighthouse"
+  }
+ ]
+}

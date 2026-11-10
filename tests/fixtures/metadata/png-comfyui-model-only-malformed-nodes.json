@@ -1,0 +1,50 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "graph with a model but no prompt text",
+  "empty ckpt_name skipped",
+  "nodes whose inputs are not objects",
+  "encoder whose inputs are not an object"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "ckpt_name": ""
+     },
+     "class_type": "CheckpointLoaderSimple"
+    },
+    "2": {
+     "inputs": {
+      "unet_name": "sdxl_lightning_4step.safetensors"
+     },
+     "class_type": "UNETLoader"
+    },
+    "3": {
+     "inputs": null,
+     "class_type": "KSampler"
+    },
+    "4": {
+     "inputs": [],
+     "class_type": "LoraLoader"
+    },
+    "5": {
+     "inputs": null,
+     "class_type": "CLIPTextEncode"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "",
+   "model": "sdxl_lightning_4step.safetensors"
+  }
+ ]
+}

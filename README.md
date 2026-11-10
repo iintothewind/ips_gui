@@ -103,19 +103,19 @@ Displays a spinner while searching, result count and elapsed time on completion,
 | Generator | Formats and metadata |
 |---|---|
 | Stable Diffusion A1111 / Forge | PNG (`parameters` tEXt chunk), JPEG/WebP EXIF or XMP text where available. Parses `Negative prompt:`, `Model:`, and `<lora:name:weight>` tags. |
-| ComfyUI | PNG (`prompt` workflow JSON in tEXt/iTXt). Parses common checkpoint/UNET loaders, `LoraLoader`, `Power Lora Loader (rgthree)`, `KSampler`, `CFGGuider`, CLIP text encode nodes, and Qwen text prompt nodes. Conditioning output slots are tracked, so a node that encodes both prompts (`TextEncodeQwenImage21`) yields its `negative_prompt` for the negative stream. |
+| ComfyUI | PNG (`prompt` and `workflow` JSON in tEXt/iTXt, including zlib-compressed iTXt); official ComfyUI WebP (`prompt:` / `workflow:` EXIF IFD0 tags); JPEG save nodes that store ComfyUI JSON in COM or EXIF `UserComment`. Parses common checkpoint/UNET loaders, `LoraLoader`, `Power Lora Loader (rgthree)`, `KSampler`, `CFGGuider`, CLIP text encode nodes, and Qwen text prompt nodes. Conditioning output slots are tracked, so a node that encodes both prompts (`TextEncodeQwenImage21`) yields its `negative_prompt` for the negative stream. A file with both `prompt` and `workflow` shows up as two results. |
 | NovelAI | PNG (`Comment` JSON, `Description` chunk) |
 | InvokeAI | JPEG / WebP (XMP with `invokeai:` namespace) |
 | Generic | JPEG / WebP (XMP `dc:description`, EXIF `UserComment`) |
 
-JPEG and WebP files may contain incomplete or missing metadata depending on the generator/plugin that saved them. `ips_gui` treats missing or malformed metadata as a normal case and leaves parsed fields blank.
+JPEG and WebP files may contain incomplete or missing metadata depending on the generator/plugin that saved them. `ips_gui` treats missing or malformed metadata as a normal case and leaves parsed fields blank. ComfyUI JSON cut off by a size limit is read up to the cut, and Python-style `NaN` / `Infinity` values are accepted.
 
 ## Development
 
 ```bash
 cargo build            # debug build
 cargo build --release  # optimized release build
-cargo test             # run unit tests
+cargo test             # unit tests + metadata fixtures (tests/fixtures/metadata)
 cargo clippy           # lint
 ```
 

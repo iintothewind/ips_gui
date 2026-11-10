@@ -1,0 +1,20 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "data without the JPEG SOI marker"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "COM",
+   "text": "a harbor at dusk"
+  }
+ ],
+ "expected": [],
+ "patch": [
+  {
+   "offset": 0,
+   "hex": "0000"
+  }
+ ]
+}

@@ -1,0 +1,74 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "camera Make without key prefix ignored",
+  "prompt:{…} tag next to a UserComment (JPEG APP1)",
+  "prompt: tag that is not JSON → plain text record"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "II",
+    "ifd": "exif",
+    "charset": "ASCII",
+    "text": "a quiet beach at noon\nSteps: 4, Model: turbo_v2"
+   },
+   "ifd0_ascii": [
+    {
+     "tag": "0x010F",
+     "text": "FUJIFILM"
+    },
+    {
+     "tag": "0x0110",
+     "text": "prompt:{\"4\": {\"inputs\": {\"ckpt_name\": \"sd_xl_base_1.0.safetensors\"}, \"class_type\": \"CheckpointLoaderSimple\"}, \"6\": {\"inputs\": {\"text\": \"a lantern festival over a river\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"7\": {\"inputs\": {\"text\": \"blurry\", \"clip\": [\"4\", 1]}, \"class_type\": \"CLIPTextEncode\"}, \"3\": {\"inputs\": {\"seed\": 1, \"steps\": 20, \"model\": [\"4\", 0], \"positive\": [\"6\", 0], \"negative\": [\"7\", 0]}, \"class_type\": \"KSampler\"}}"
+    }
+   ]
+  },
+  {
+   "segment": "Exif",
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "ifd0",
+    "charset": "undefined",
+    "text": "second block"
+   },
+   "ifd0_ascii": [
+    {
+     "tag": "0x0110",
+     "text": "prompt:a hand-typed note, not JSON"
+    }
+   ]
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "a quiet beach at noon\nSteps: 4, Model: turbo_v2",
+   "model": "turbo_v2",
+   "positive_prompt": "a quiet beach at noon"
+  },
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a lantern festival over a river | blurry",
+   "model": "sd_xl_base_1.0.safetensors",
+   "positive_prompt": "a lantern festival over a river",
+   "negative_prompt": "blurry"
+  },
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "second block",
+   "positive_prompt": "second block"
+  },
+  {
+   "metadata_key": "prompt",
+   "generator": "unknown",
+   "prompt": "a hand-typed note, not JSON",
+   "positive_prompt": "a hand-typed note, not JSON"
+  }
+ ]
+}

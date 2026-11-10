@@ -1,0 +1,26 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "file ends after a complete segment"
+ ],
+ "container": "jpeg",
+ "metadata": [
+  {
+   "segment": "COM",
+   "text": "a harbor at dusk"
+  },
+  {
+   "segment": "COM",
+   "text": "second comment that gets cut"
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "COM",
+   "generator": "a1111",
+   "prompt": "a harbor at dusk",
+   "positive_prompt": "a harbor at dusk"
+  }
+ ],
+ "truncate_to": 22
+}

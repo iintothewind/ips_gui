@@ -1,0 +1,442 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "UI workflow: UnetLoaderGGUF + LoraLoaderModelOnly widgets",
+  "string node ids",
+  "bypassed LoRA node ignored",
+  "input without a name",
+  "link id missing from links",
+  "node without widgets",
+  "loader nodes with empty widgets_values",
+  "loader widgets converted to linked inputs",
+  "link with a null source node",
+  "encoder text/prompt converted to linked inputs"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "workflow",
+   "json": {
+    "nodes": [
+     {
+      "id": "10",
+      "type": "UnetLoaderGGUF",
+      "mode": 0,
+      "widgets_values": [
+       "z_image_turbo-Q6_K.gguf"
+      ]
+     },
+     {
+      "id": 11,
+      "type": "LoraLoaderModelOnly",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "model",
+        "link": 1
+       }
+      ],
+      "widgets_values": [
+       "detail_tweaker.safetensors",
+       0.4
+      ]
+     },
+     {
+      "id": 12,
+      "type": "LoraLoader",
+      "mode": 4,
+      "inputs": [
+       {
+        "name": "model",
+        "link": null
+       }
+      ],
+      "widgets_values": [
+       "bypassed_style.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 13,
+      "type": "CLIPTextEncode",
+      "mode": 0,
+      "widgets_values": [
+       "a paper boat on a pond"
+      ]
+     },
+     {
+      "id": 14,
+      "type": "CLIPTextEncode",
+      "mode": 0,
+      "widgets_values": [
+       "low quality"
+      ]
+     },
+     {
+      "id": 15,
+      "type": "KSampler",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "model",
+        "link": 2
+       },
+       {
+        "name": "positive",
+        "link": 3
+       },
+       {
+        "name": "negative",
+        "link": 4
+       },
+       {
+        "link": 7
+       },
+       {
+        "name": "latent_image",
+        "link": 99
+       }
+      ],
+      "widgets_values": [
+       1,
+       "fixed",
+       8,
+       1,
+       "euler",
+       "simple",
+       1
+      ]
+     },
+     {
+      "id": 16,
+      "type": "VAEDecode",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "samples",
+        "link": 5
+       }
+      ]
+     },
+     {
+      "id": 17,
+      "type": "CheckpointLoaderSimple",
+      "mode": 0,
+      "widgets_values": []
+     },
+     {
+      "id": 18,
+      "type": "UNETLoader",
+      "mode": 0,
+      "widgets_values": []
+     },
+     {
+      "id": 19,
+      "type": "LoraLoader",
+      "mode": 0,
+      "widgets_values": []
+     },
+     {
+      "id": 20,
+      "type": "LoraLoaderModelOnly",
+      "mode": 0,
+      "widgets_values": []
+     },
+     {
+      "id": 21,
+      "type": "CheckpointLoaderSimple",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "ckpt_name",
+        "link": 51
+       }
+      ],
+      "widgets_values": [
+       "stale_widget_value.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 22,
+      "type": "UNETLoader",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "unet_name",
+        "link": 52
+       }
+      ],
+      "widgets_values": [
+       "stale_widget_value.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 23,
+      "type": "LoraLoader",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "lora_name",
+        "link": 53
+       },
+       {
+        "name": "strength_model",
+        "link": 83
+       },
+       {
+        "name": "strength_clip",
+        "link": 93
+       }
+      ],
+      "widgets_values": [
+       "stale_widget_value.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 24,
+      "type": "LoraLoaderModelOnly",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "lora_name",
+        "link": 54
+       },
+       {
+        "name": "strength_model",
+        "link": 84
+       }
+      ],
+      "widgets_values": [
+       "stale_widget_value.safetensors",
+       1,
+       1
+      ]
+     },
+     {
+      "id": 25,
+      "type": "PrimitiveNode",
+      "mode": 0,
+      "widgets_values": [
+       "primitive"
+      ]
+     },
+     {
+      "id": 26,
+      "type": "CLIPTextEncode",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "text",
+        "link": 40
+       },
+       {
+        "name": "clip",
+        "link": 41
+       }
+      ],
+      "widgets_values": []
+     },
+     {
+      "id": 27,
+      "type": "TextEncodeQwenImageEditPlus",
+      "mode": 0,
+      "inputs": [
+       {
+        "name": "prompt",
+        "link": 42
+       }
+      ],
+      "widgets_values": []
+     }
+    ],
+    "links": [
+     [
+      1,
+      "10",
+      0,
+      11,
+      0,
+      "MODEL"
+     ],
+     [
+      2,
+      11,
+      0,
+      15,
+      0,
+      "MODEL"
+     ],
+     [
+      3,
+      13,
+      0,
+      15,
+      1,
+      "CONDITIONING"
+     ],
+     [
+      4,
+      14,
+      0,
+      15,
+      2,
+      "CONDITIONING"
+     ],
+     [
+      5,
+      15,
+      0,
+      16,
+      0,
+      "LATENT"
+     ],
+     [
+      51,
+      25,
+      0,
+      21,
+      0,
+      "*"
+     ],
+     [
+      81,
+      25,
+      0,
+      21,
+      0,
+      "*"
+     ],
+     [
+      91,
+      25,
+      0,
+      21,
+      0,
+      "*"
+     ],
+     [
+      52,
+      25,
+      0,
+      22,
+      0,
+      "*"
+     ],
+     [
+      82,
+      25,
+      0,
+      22,
+      0,
+      "*"
+     ],
+     [
+      92,
+      25,
+      0,
+      22,
+      0,
+      "*"
+     ],
+     [
+      53,
+      25,
+      0,
+      23,
+      0,
+      "*"
+     ],
+     [
+      83,
+      25,
+      0,
+      23,
+      0,
+      "*"
+     ],
+     [
+      93,
+      25,
+      0,
+      23,
+      0,
+      "*"
+     ],
+     [
+      54,
+      25,
+      0,
+      24,
+      0,
+      "*"
+     ],
+     [
+      84,
+      25,
+      0,
+      24,
+      0,
+      "*"
+     ],
+     [
+      94,
+      25,
+      0,
+      24,
+      0,
+      "*"
+     ],
+     [
+      40,
+      25,
+      0,
+      26,
+      0,
+      "STRING"
+     ],
+     [
+      41,
+      null,
+      1,
+      26,
+      1,
+      "CLIP"
+     ],
+     [
+      42,
+      25,
+      0,
+      27,
+      0,
+      "STRING"
+     ]
+    ],
+    "version": 0.4
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "workflow",
+   "generator": "comfyui",
+   "prompt": "a paper boat on a pond | low quality",
+   "model": "z_image_turbo-Q6_K.gguf",
+   "loras": [
+    {
+     "name": "detail_tweaker.safetensors",
+     "weight": "0.4"
+    }
+   ],
+   "positive_prompt": "a paper boat on a pond",
+   "negative_prompt": "low quality"
+  }
+ ]
+}

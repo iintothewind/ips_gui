@@ -1,0 +1,75 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "custom encoder with prompt + negative_prompt",
+  "negative read from output slot 1",
+  "LoraLoaderModelOnly"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "unet_name": "qwen_image_2.1_turbo.safetensors",
+      "weight_dtype": "default"
+     },
+     "class_type": "UNETLoader"
+    },
+    "2": {
+     "inputs": {
+      "model": [
+       "1",
+       0
+      ],
+      "lora_name": "qwen\\lightning_8step.safetensors",
+      "strength_model": 1
+     },
+     "class_type": "LoraLoaderModelOnly"
+    },
+    "3": {
+     "inputs": {
+      "prompt": "a cozy reading nook by a rainy window",
+      "negative_prompt": "blurry, watermark"
+     },
+     "class_type": "TextEncodeQwenImage21"
+    },
+    "4": {
+     "inputs": {
+      "model": [
+       "2",
+       0
+      ],
+      "positive": [
+       "3",
+       0
+      ],
+      "negative": [
+       "3",
+       1
+      ]
+     },
+     "class_type": "KSampler"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a cozy reading nook by a rainy window | blurry, watermark",
+   "model": "qwen_image_2.1_turbo.safetensors",
+   "loras": [
+    {
+     "name": "qwen\\lightning_8step.safetensors",
+     "weight": "1"
+    }
+   ],
+   "positive_prompt": "a cozy reading nook by a rainy window",
+   "negative_prompt": "blurry, watermark"
+  }
+ ]
+}

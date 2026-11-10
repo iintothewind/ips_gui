@@ -1,8 +1,8 @@
 use std::io::{BufReader, Read, Seek, SeekFrom};
 use std::path::Path;
 
-use crate::ips::types::{Generator, PromptRecord};
-use super::{a1111, exif, jpeg};
+use crate::ips::types::PromptRecord;
+use super::{a1111, jpeg};
 
 const RIFF_MAGIC: &[u8; 4] = b"RIFF";
 const WEBP_MAGIC: &[u8; 4] = b"WEBP";
@@ -53,13 +53,15 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
 
         match chunk_id {
             b"XMP " => {
-                let mut chunk_data = vec![0u8; chunk_size];
-                if reader.read_exact(&mut chunk_data).is_err() {
-                    if verbose {
-                        eprintln!("ips: {}: truncated XMP chunk", path.display());
+                let chunk_data = match super::read_exact_vec(&mut reader, chunk_size) {
+                    Ok(data) => data,
+                    Err(_) => {
+                        if verbose {
+                            eprintln!("ips: {}: truncated XMP chunk", path.display());
+                        }
+                        break;
                     }
-                    break;
-                }
+                };
                 if chunk_size & 1 != 0 {
                     let _ = reader.seek(SeekFrom::Current(1));
                 }
@@ -75,25 +77,19 @@ pub fn extract(path: &Path, verbose: bool) -> Vec<PromptRecord> {
                 }
             }
             b"EXIF" => {
-                let mut chunk_data = vec![0u8; chunk_size];
-                if reader.read_exact(&mut chunk_data).is_err() {
-                    if verbose {
-                        eprintln!("ips: {}: truncated EXIF chunk", path.display());
+                let chunk_data = match super::read_exact_vec(&mut reader, chunk_size) {
+                    Ok(data) => data,
+                    Err(_) => {
+                        if verbose {
+                            eprintln!("ips: {}: truncated EXIF chunk", path.display());
+                        }
+                        break;
                     }
-                    break;
-                }
+                };
                 if chunk_size & 1 != 0 {
                     let _ = reader.seek(SeekFrom::Current(1));
                 }
-                if let Some(prompt) = exif::extract_user_comment(&chunk_data) {
-                    results.push(PromptRecord::with_details(
-                        path.to_path_buf(),
-                        prompt.clone(),
-                        Generator::Unknown,
-                        "UserComment",
-                        a1111::extract_details(&prompt),
-                    ));
-                }
+                results.extend(super::exif_records(path, &chunk_data, verbose));
             }
             _ => {
                 // Skip image data chunks (VP8, VP8L, VP8X, ANIM, ANMF, …)

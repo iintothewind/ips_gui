@@ -1,0 +1,35 @@
+{
+ "origin": "content/comfy/202601/20260128/20260128212347.webp",
+ "covers": [
+  "a1:model",
+  "a1:model-hash",
+  "a1:negative",
+  "a1:steps",
+  "family:illustrious",
+  "webp-exif:UNICODE:MM"
+ ],
+ "container": "webp",
+ "metadata": [
+  {
+   "chunk": "EXIF",
+   "exif_header": false,
+   "user_comment": {
+    "byte_order": "MM",
+    "ifd": "exif",
+    "charset": "UNICODE",
+    "utf16": "be",
+    "text": "score_9, score_8_up, score_7_up, masterpiece, best quality, very aesthetic, extremely detailed, ultra-detailed, highres, absurdres,   (realistic:1.3), usnr, atnr, manhwa,    holographic, iridescent, subsurface scattering, crack of light, dark, night,  woman, flowers\nNegative prompt: (worst quality:2), (low quality:2), (normal quality:2),  bad anatomy, bad proportions, poorly drawn face, poorly drawn hands, missing fingers, extra limbs, blurry, pixelated, distorted, lowres, jpeg artifacts, watermark, signature, text, (deformed:1.5), (bad hands:1.3), overexposed, underexposed, censored, mutated, extra fingers, cloned face, bad eyes,  childlike, baby face, overly youthful, young-looking, loli, chibi, round face, big eyes, huge eyes, kawaii style, cute style, soft glow, beauty filter effect, porcelain skin, overly smooth skin,\nSteps: 30, Sampler: Euler a_beta, CFG scale: 3.5, Seed: 693316664299126, Clip skip: 2, Size: 832x1216, Model: illustrij_gen_il_v2.safetensors, Model hash: b7fde547e3, Hashes: {\"model\": \"b7fde547e3\"}"
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "UserComment",
+   "generator": "unknown",
+   "prompt": "score_9, score_8_up, score_7_up, masterpiece, best quality, very aesthetic, extremely detailed, ultra-detailed, highres, absurdres,   (realistic:1.3), usnr, atnr, manhwa,    holographic, iridescent, subsurface scattering, crack of light, dark, night,  woman, flowers\nNegative prompt: (worst quality:2), (low quality:2), (normal quality:2),  bad anatomy, bad proportions, poorly drawn face, poorly drawn hands, missing fingers, extra limbs, blurry, pixelated, distorted, lowres, jpeg artifacts, watermark, signature, text, (deformed:1.5), (bad hands:1.3), overexposed, underexposed, censored, mutated, extra fingers, cloned face, bad eyes,  childlike, baby face, overly youthful, young-looking, loli, chibi, round face, big eyes, huge eyes, kawaii style, cute style, soft glow, beauty filter effect, porcelain skin, overly smooth skin,\nSteps: 30, Sampler: Euler a_beta, CFG scale: 3.5, Seed: 693316664299126, Clip skip: 2, Size: 832x1216, Model: illustrij_gen_il_v2.safetensors, Model hash: b7fde547e3, Hashes: {\"model\": \"b7fde547e3\"}",
+   "model": "illustrij_gen_il_v2.safetensors",
+   "positive_prompt": "score_9, score_8_up, score_7_up, masterpiece, best quality, very aesthetic, extremely detailed, ultra-detailed, highres, absurdres,   (realistic:1.3), usnr, atnr, manhwa,    holographic, iridescent, subsurface scattering, crack of light, dark, night,  woman, flowers",
+   "negative_prompt": "(worst quality:2), (low quality:2), (normal quality:2),  bad anatomy, bad proportions, poorly drawn face, poorly drawn hands, missing fingers, extra limbs, blurry, pixelated, distorted, lowres, jpeg artifacts, watermark, signature, text, (deformed:1.5), (bad hands:1.3), overexposed, underexposed, censored, mutated, extra fingers, cloned face, bad eyes,  childlike, baby face, overly youthful, young-looking, loli, chibi, round face, big eyes, huge eyes, kawaii style, cute style, soft glow, beauty filter effect, porcelain skin, overly smooth skin,"
+  }
+ ]
+}

@@ -1,0 +1,57 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "encoder with only positive/negative fields (role fallback)",
+  "prompt built from resolved details",
+  "no model",
+  "first sampler references a missing node; the next sampler is used"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "positive": "a koi pond in a zen garden",
+      "negative": "people",
+      "style": "base"
+     },
+     "class_type": "SDXLPromptStyler"
+    },
+    "2": {
+     "inputs": {
+      "positive": [
+       "1",
+       0
+      ],
+      "negative": [
+       "1",
+       1
+      ]
+     },
+     "class_type": "KSampler"
+    },
+    "15": {
+     "inputs": {
+      "positive": [
+       "99",
+       0
+      ]
+     },
+     "class_type": "KSampler"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a koi pond in a zen garden | people",
+   "positive_prompt": "a koi pond in a zen garden",
+   "negative_prompt": "people"
+  }
+ ]
+}

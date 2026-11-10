@@ -1,0 +1,116 @@
+{
+ "origin": "synthetic",
+ "covers": [
+  "UnetLoaderGGUF",
+  "CLIPTextEncodeFlux clip_l/t5xxl",
+  "FluxGuidance conditioning chain",
+  "ConditioningZeroOut negative",
+  "CFGGuider + SamplerCustomAdvanced"
+ ],
+ "container": "png",
+ "metadata": [
+  {
+   "chunk": "tEXt",
+   "keyword": "prompt",
+   "json": {
+    "1": {
+     "inputs": {
+      "unet_name": "flux1-dev-Q8_0.gguf"
+     },
+     "class_type": "UnetLoaderGGUF"
+    },
+    "2": {
+     "inputs": {
+      "clip_name1": "t5xxl_fp8.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux"
+     },
+     "class_type": "DualCLIPLoader"
+    },
+    "3": {
+     "inputs": {
+      "clip": [
+       "2",
+       0
+      ],
+      "clip_l": "a misty pine forest at sunrise",
+      "t5xxl": "a misty pine forest at sunrise, volumetric light",
+      "guidance": 3.5
+     },
+     "class_type": "CLIPTextEncodeFlux"
+    },
+    "4": {
+     "inputs": {
+      "conditioning": [
+       "3",
+       0
+      ],
+      "guidance": 3.5
+     },
+     "class_type": "FluxGuidance"
+    },
+    "5": {
+     "inputs": {
+      "conditioning": [
+       "3",
+       0
+      ]
+     },
+     "class_type": "ConditioningZeroOut"
+    },
+    "6": {
+     "inputs": {
+      "model": [
+       "1",
+       0
+      ],
+      "positive": [
+       "4",
+       0
+      ],
+      "negative": [
+       "5",
+       0
+      ],
+      "cfg": 1.0
+     },
+     "class_type": "CFGGuider"
+    },
+    "7": {
+     "inputs": {
+      "guider": [
+       "6",
+       0
+      ],
+      "noise": [
+       "8",
+       0
+      ],
+      "sampler": [
+       "9",
+       0
+      ],
+      "sigmas": [
+       "10",
+       0
+      ],
+      "latent_image": [
+       "11",
+       0
+      ]
+     },
+     "class_type": "SamplerCustomAdvanced"
+    }
+   }
+  }
+ ],
+ "expected": [
+  {
+   "metadata_key": "prompt",
+   "generator": "comfyui",
+   "prompt": "a misty pine forest at sunrise | a misty pine forest at sunrise, volumetric light",
+   "model": "flux1-dev-Q8_0.gguf",
+   "positive_prompt": "a misty pine forest at sunrise\na misty pine forest at sunrise, volumetric light"
+  }
+ ]
+}
